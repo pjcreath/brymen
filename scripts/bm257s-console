@@ -2,6 +2,7 @@
 """Minimal console for monitoring brymen bm257s multimeter data"""
 # pylint: disable=invalid-name
 
+import argparse
 import curses
 import datetime
 import sys
@@ -9,6 +10,7 @@ import time
 
 import bm257s
 
+PORT = "/dev/cu.usbserial-1430"
 
 def main(stdscr, interface):
     """Start minimal bm257s console
@@ -84,8 +86,14 @@ def main(stdscr, interface):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("port", nargs='?',
+                        default="/dev/ttyUSB0",
+                        help="serial port to use, defaults to /dev/ttyUSB0"
+                       )
+    args = parser.parse_args()
     try:
-        with bm257s.BM257sSerialInterface(read_timeout=1.0) as mm:
+        with bm257s.BM257sSerialInterface(port=args.port, read_timeout=1.0) as mm:
             try:
                 curses.wrapper(main, mm)
             except KeyboardInterrupt:

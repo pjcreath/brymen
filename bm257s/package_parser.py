@@ -1,6 +1,6 @@
 """Parse package content to obtain measurement result"""
 
-from .measurement import Measurement, VoltageMeasurement
+from .measurement import Measurement, VoltageMeasurement, TemperatureMeasurement
 from .package_reader import Symbol
 
 
@@ -67,7 +67,21 @@ def parse_temperature(pkg, prefix):
     :return: Multimeter measurement type and measurement
     :rtype: tuple
     """
-    raise NotImplementedError("Type of measurement is not yet supported")
+    text = pkg.segment_string()
+
+    unit = text[-1]
+    if unit == 'F':
+        unit = TemperatureMeasurement.UNIT_FAHRENHEIT
+    elif unit == 'C':
+        unit = TemperatureMeasurement.UNIT_CELSIUS
+    else:
+        raise RuntimeError(f"Unknown temperature: {text}")
+
+    value = int(text[:-1])
+    return (
+        Measurement.TEMPERATURE,
+        TemperatureMeasurement(unit=unit, value=value)
+    )
 
 
 def parse_prefix(pkg):

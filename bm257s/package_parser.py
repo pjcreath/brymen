@@ -1,6 +1,6 @@
 """Parse package content to obtain measurement result"""
 
-from .measurement import Measurement, VoltageMeasurement, TemperatureMeasurement
+from .measurement import Measurement, TemperatureMeasurement, VoltageMeasurement
 from .package_reader import Symbol
 
 
@@ -56,7 +56,7 @@ def parse_resistance(pkg, prefix):
     raise NotImplementedError("Type of measurement is not yet supported")
 
 
-def parse_temperature(pkg, prefix):
+def parse_temperature(pkg, _unused_prefix):
     """Parse temperature measurement from package
 
     :param pkg: Package to parse
@@ -70,18 +70,15 @@ def parse_temperature(pkg, prefix):
     text = pkg.segment_string()
 
     unit = text[-1]
-    if unit == 'F':
+    if unit == "F":
         unit = TemperatureMeasurement.UNIT_FAHRENHEIT
-    elif unit == 'C':
+    elif unit == "C":
         unit = TemperatureMeasurement.UNIT_CELSIUS
     else:
         raise RuntimeError(f"Unknown temperature: {text}")
 
     value = int(text[:-1])
-    return (
-        Measurement.TEMPERATURE,
-        TemperatureMeasurement(unit=unit, value=value)
-    )
+    return (Measurement.TEMPERATURE, TemperatureMeasurement(unit=unit, value=value))
 
 
 def parse_prefix(pkg):

@@ -199,10 +199,8 @@ def parse_symbols(data):
     result = []
     # Go through all bytes
     for i in range(0, 15):
-
         # Skip segment display section
         if i in symbol_positions:
-
             # Go through symbol bits
             for j in range(0, 4):
                 if data[i] & (1 << j):
@@ -232,7 +230,7 @@ def parse_package(data):
     """
     # Check byte indices
     index_mask = ((1 << 5) - 1) << 4
-    for (i, d_i) in enumerate(data):
+    for i, d_i in enumerate(data):
         index_field = (d_i & index_mask) >> 4
         if index_field != i:
             raise RuntimeError(
@@ -331,10 +329,9 @@ class PackageReader:
             new_data = self._reader.read(read_next)
 
             if len(new_data) > 0:
-
                 # Find package start and perform alignment with it
                 data = data + new_data
-                for (i, byte) in enumerate(data):
+                for i, byte in enumerate(data):
                     if byte == self.PKG_START:
                         data = data[i:]
                         read_next = self.PKG_LEN - len(data)

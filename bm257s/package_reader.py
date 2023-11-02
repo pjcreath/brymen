@@ -3,6 +3,13 @@ import enum
 import threading
 
 
+class TruncatedPackage(Exception):
+    """Exception raised when a truncated package is encountered."""
+
+    def __init__(self, length):
+        self.length = length
+
+
 class Symbol(enum.Enum):
     """Enumeration of all LCD symbols"""
 
@@ -227,16 +234,14 @@ def parse_package(data):
     :param data: Raw multimeter data, aligned to 15-byte boundary
     :type data: bytes
     :raise RuntimeError: If package contains invalid data
+    :raise TruncatedPackage: If the package is incomplete
     """
     # Check byte indices
     index_mask = ((1 << 5) - 1) << 4
     for i, d_i in enumerate(data):
         index_field = (d_i & index_mask) >> 4
         if index_field != i:
-            raise RuntimeError(
-                f"Raw data package contains invalid byte index at byte {i}",
-                index_field,
-            )
+            raise TruncatedPackage(i)
 
     segments = [parse_segment(data, i) for i in range(0, 4)]
     dots = [parse_dot(data, i) for i in range(0, 3)]
@@ -322,27 +327,28 @@ class PackageReader:
 
     def _run(self):
         data = bytes()
-        read_next = self.PKG_LEN
 
         while not self._read_thread_stop.is_set():
             # Read new data from reader
-            new_data = self._reader.read(read_next)
+            length = self.PKG_LEN - len(data)
+            if length > 0:
+                data = data + self._reader.read(length)
 
-            if len(new_data) > 0:
+            if len(data) > 0:
                 # Find package start and perform alignment with it
-                data = data + new_data
                 for i, byte in enumerate(data):
                     if byte == self.PKG_START:
                         data = data[i:]
-                        read_next = self.PKG_LEN - len(data)
                         break
 
                 # Parse package
                 if len(data) >= self.PKG_LEN:
-                    read_next = self.PKG_LEN
-
-                    pkg = parse_package(data[0 : self.PKG_LEN])  # noqa: E203
-                    data = data[self.PKG_LEN :]  # noqa: E203
-                    with self._last_pkg_lock:
-                        self._last_pkg = pkg
-                        self._received_pkg.set()
+                    try:
+                        pkg = parse_package(data[: self.PKG_LEN])
+                        data = data[self.PKG_LEN :]
+                        with self._last_pkg_lock:
+                            self._last_pkg = pkg
+                            self._received_pkg.set()
+                    except TruncatedPackage as e:
+                        data = data[e.length :]
+        return

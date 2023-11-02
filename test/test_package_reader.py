@@ -2,7 +2,7 @@
 
 import unittest
 
-from bm257s.package_reader import PackageReader, parse_package
+from bm257s.package_reader import PackageReader, TruncatedPackage, parse_package
 
 from .helpers.mock_data_reader import MockDataReader
 from .helpers.raw_package_helpers import (
@@ -133,6 +133,36 @@ class TestPackageReader(unittest.TestCase):
 
             check_example_pkg(self, pkg)
 
+    def test_truncated_package(self):
+        """Test handling of truncated packages"""
+        truncated_data = {
+            1: (EXAMPLE_RAW_PKG[:1] + EXAMPLE_RAW_PKG),
+            9: (EXAMPLE_RAW_PKG[:9] + EXAMPLE_RAW_PKG),
+            14: (EXAMPLE_RAW_PKG[:14] + EXAMPLE_RAW_PKG),
+        }
+
+        for length, data in truncated_data.items():
+            self.assertTrue(
+                self._mock_reader.all_data_used,
+                "Mock data should be empty before test start",
+            )
+
+            self._mock_reader.set_next_data(data)
+            self.assertTrue(
+                self._pkg_reader.wait_for_package(self.READER_TIMEOUT),
+                f"Read package from raw data reader (truncated to {length})",
+            )
+            pkg = self._pkg_reader.next_package()
+            self.assertIsNotNone(
+                pkg, f"Package could not get parsed (truncated to {length})"
+            )
+            self.assertTrue(
+                self._mock_reader.all_data_used,
+                msg=f"Did not read all data from package (truncated to {length})",
+            )
+
+            check_example_pkg(self, pkg)
+
 
 class TestPackageParsing(unittest.TestCase):
     """Testcase for parsing of raw data packages"""
@@ -150,17 +180,17 @@ class TestPackageParsing(unittest.TestCase):
     def test_index_checking(self):
         """Test checking of byte indices in raw packages"""
         self.assertRaises(
-            RuntimeError,
+            TruncatedPackage,
             lambda _: parse_package(change_byte_index(EXAMPLE_RAW_PKG, 0, 1)),
             "Detect incremented first byte index",
         )
         self.assertRaises(
-            RuntimeError,
+            TruncatedPackage,
             lambda _: parse_package(change_byte_index(EXAMPLE_RAW_PKG, 14, 13)),
             "Detect decremented last byte index",
         )
         self.assertRaises(
-            RuntimeError,
+            TruncatedPackage,
             lambda _: parse_package(change_byte_index(EXAMPLE_RAW_PKG, 7, 12)),
             "Detect changed byte index in middle of package",
         )

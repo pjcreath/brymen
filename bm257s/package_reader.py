@@ -1,5 +1,6 @@
 """Read, organize and validate packages from data input"""
 import enum
+import queue
 import threading
 from datetime import datetime
 
@@ -251,7 +252,7 @@ def parse_package(data):
     return Package(segments, dots, minus, set(symbols))
 
 
-class PackageReader:
+class PackageReader:  # pylint: disable=R0902
     """Read, organize and validate packages from data input
 
     :param reader: Input reader used
@@ -264,6 +265,7 @@ class PackageReader:
     def __init__(self, reader):
         self._reader = reader
         self._log = None
+        self._exception = queue.Queue(maxsize=1)
 
         self._read_thread = threading.Thread(target=self._run)
         self._read_thread_stop = threading.Event()
@@ -326,6 +328,7 @@ class PackageReader:
         :return: Whether a package was received during the given time
         :rtype: bool
         """
+        self._propagate_exceptions()
         return self._received_pkg.wait(timeout)
 
     def next_package(self):
@@ -334,6 +337,7 @@ class PackageReader:
         :return: Last received packgae
         :rtype: Package
         """
+        self._propagate_exceptions()
         with self._last_pkg_lock:
             result = self._last_pkg
             self._last_pkg = None
@@ -342,7 +346,23 @@ class PackageReader:
 
             return result
 
+    def _propagate_exceptions(self):
+        """Propagate any exceptions that cause the thread to stop"""
+        try:
+            e = self._exception.get(block=False)
+        except queue.Empty:
+            return
+        raise e
+
     def _run(self):
+        try:
+            self._read_and_parse_packages()
+        except Exception as e:  # pylint: disable=W0718
+            # Pass any unhandled exceptions back to the main thread.
+            self._exception.put(e, block=False)
+        return
+
+    def _read_and_parse_packages(self):
         data = bytes()
 
         while not self._read_thread_stop.is_set():

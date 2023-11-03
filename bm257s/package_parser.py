@@ -85,7 +85,7 @@ def parse_prefix(pkg):
     """Parse metrix prefix of measurement
 
     :param pkg: Package to parse
-    :type pkg: bm257s.package_parser.Packe
+    :type pkg: bm257s.package_parser.Package
 
     :return: Prefix shown in measurement
     :rtype: str

@@ -118,8 +118,8 @@ class BM257sSerialInterface:
     def read(self):
         """Reads latest measurement from multimeter
 
-        :return: Tuple indicating measured quantity and corresponding measurement
-        :rtype: tuple
+        :return: measurement
+        :rtype: Measurement
         """
         pkg = self._package_reader.next_package()
         if pkg is None:

@@ -1,4 +1,6 @@
 """Read, organize and validate packages from data input"""
+# pylint: disable=R0902,R0913
+
 import enum
 import queue
 import threading
@@ -54,11 +56,14 @@ class Package:
     :type symbol: set
     """
 
-    def __init__(self, segments, dots, minus, symbols):
+    def __init__(self, segments, dots, minus, symbols, timestamp=None):
+        if timestamp is None:
+            timestamp = datetime.now()
         self.segments = segments
         self.dots = dots
         self.minus = minus
         self.symbols = symbols
+        self.timestamp = timestamp
 
     def segment_character(self, pos):
         """Read character from segment display
@@ -245,14 +250,15 @@ def parse_package(data):
         if index_field != i:
             raise TruncatedPackage(i)
 
+    timestamp = datetime.now()
     segments = [parse_segment(data, i) for i in range(0, 4)]
     dots = [parse_dot(data, i) for i in range(0, 3)]
     minus = parse_minus(data)
     symbols = parse_symbols(data)
-    return Package(segments, dots, minus, set(symbols))
+    return Package(segments, dots, minus, set(symbols), timestamp)
 
 
-class PackageReader:  # pylint: disable=R0902
+class PackageReader:
     """Read, organize and validate packages from data input
 
     :param reader: Input reader used
@@ -303,10 +309,11 @@ class PackageReader:  # pylint: disable=R0902
 
         self._read_thread = threading.Thread(target=self._run)
 
-    def log(self, message):
+    def log(self, message, now=None):
         """Log the message to the logfile (if we're logging)."""
         if self._log:
-            now = datetime.now()
+            if now is None:
+                now = datetime.now()
             self._log.write(f"{now} {message}\n")
             self._log.flush()
         return
@@ -382,7 +389,7 @@ class PackageReader:  # pylint: disable=R0902
                 if len(data) >= self.PKG_LEN:
                     try:
                         pkg = parse_package(data[: self.PKG_LEN])
-                        self.log(data.hex(" "))
+                        self.log(data.hex(" "), pkg.timestamp)
                         data = data[self.PKG_LEN :]
                         with self._last_pkg_lock:
                             self._last_pkg = pkg

@@ -22,7 +22,9 @@ def parse_voltage(pkg, prefix):
     elif Symbol.DC in pkg.symbols:
         current = VoltageMeasurement.CURRENT_DC
 
-    return VoltageMeasurement(value=value, current=current, prefix=prefix)
+    return VoltageMeasurement(
+        value=value, current=current, prefix=prefix, timestamp=pkg.timestamp
+    )
 
 
 def parse_current(pkg, prefix):
@@ -75,7 +77,7 @@ def parse_temperature(pkg, _unused_prefix):
         raise RuntimeError(f"Unknown temperature: {text}")
 
     value = int(text[:-1])
-    return TemperatureMeasurement(unit=unit, value=value)
+    return TemperatureMeasurement(unit=unit, value=value, timestamp=pkg.timestamp)
 
 
 def parse_prefix(pkg):

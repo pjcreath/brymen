@@ -1,6 +1,7 @@
 """Representation of measurements taken by bm257s multimeter"""
 # pylint: disable=R0903
 # Remove this once usage becomes clearer
+from datetime import datetime
 
 
 class Measurement:
@@ -16,8 +17,11 @@ class Measurement:
     PREFIX_MILLI = "m"
     PREFIX_MICRO = "u"
 
-    def __init__(self, prefix=PREFIX_NONE):
+    def __init__(self, prefix=PREFIX_NONE, timestamp=None):
         self.prefix = prefix
+        if timestamp is None:
+            timestamp = datetime.now()
+        self.timestamp = timestamp
 
     @property
     def type(self):
@@ -42,13 +46,13 @@ class TemperatureMeasurement(Measurement):
     UNIT_CELSIUS = "C"
     UNIT_FAHRENHEIT = "F"
 
-    def __init__(self, unit, value):
+    def __init__(self, unit, value, timestamp=None):
         if unit not in [self.UNIT_CELSIUS, self.UNIT_FAHRENHEIT]:
             raise ValueError(f"Unknown temperature unit: {unit}")
         self.unit = unit
         self.value = value
 
-        super().__init__()
+        super().__init__(timestamp=timestamp)
 
     def __str__(self):
         value_str = "--" if self.value is None else self.value
@@ -67,10 +71,10 @@ class ResistanceMeasurement(Measurement):
 
     _type = "Resistance"
 
-    def __init__(self, value, prefix=Measurement.PREFIX_NONE):
+    def __init__(self, value, prefix=Measurement.PREFIX_NONE, timestamp=None):
         self.value = value
 
-        super().__init__(prefix)
+        super().__init__(prefix, timestamp=timestamp)
 
     def __str__(self):
         if self.value is not None:
@@ -95,11 +99,11 @@ class VoltageMeasurement(Measurement):
     CURRENT_AC = 1
     CURRENT_DC = 2
 
-    def __init__(self, value, current, prefix=Measurement.PREFIX_NONE):
+    def __init__(self, value, current, prefix=Measurement.PREFIX_NONE, timestamp=None):
         self.value = value
         self.current = current
 
-        super().__init__(prefix)
+        super().__init__(prefix, timestamp=timestamp)
 
     def __str__(self):
         current_postfix = {self.CURRENT_AC: " [~]", self.CURRENT_DC: ""}

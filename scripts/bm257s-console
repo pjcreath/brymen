@@ -46,8 +46,8 @@ def main(stdscr, interface):
             # Read from interface
             measurement = interface.read()
             if measurement is not None:
-                win_qty.addstr(0, 0, f"{measurement[0]:>19}")
-                win_meas.addstr(0, 0, f"{str(measurement[1]):>19}")
+                win_qty.addstr(0, 0, f"{measurement.type:>19}")
+                win_meas.addstr(0, 0, f"{str(measurement):>19}")
 
             status = connected
 

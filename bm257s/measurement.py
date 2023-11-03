@@ -19,9 +19,13 @@ class Measurement:
     def __init__(self, prefix=PREFIX_NONE):
         self.prefix = prefix
 
-    TEMPERATURE = "TEMPERATURE"
-    RESISTANCE = "RESISTANCE"
-    VOLTAGE = "VOLTAGE"
+    @property
+    def type(self):
+        """Type of measurement
+
+        Raises an exception if the subclass fails to define it
+        """
+        return self._type  # pylint: disable=E1101
 
 
 class TemperatureMeasurement(Measurement):
@@ -32,6 +36,8 @@ class TemperatureMeasurement(Measurement):
     :param value: Measured temperature or None if no probe is connected
     :type value: int
     """
+
+    _type = "Temperature"
 
     UNIT_CELSIUS = "C"
     UNIT_FAHRENHEIT = "F"
@@ -59,6 +65,8 @@ class ResistanceMeasurement(Measurement):
     :type prefix: int
     """
 
+    _type = "Resistance"
+
     def __init__(self, value, prefix=Measurement.PREFIX_NONE):
         self.value = value
 
@@ -81,6 +89,8 @@ class VoltageMeasurement(Measurement):
     :param prefix: Metrix prefix of measurement
     :type prefix: int
     """
+
+    _type = "Voltage"
 
     CURRENT_AC = 1
     CURRENT_DC = 2

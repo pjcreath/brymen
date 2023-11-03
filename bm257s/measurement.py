@@ -31,14 +31,14 @@ class TemperatureMeasurement(Measurement):
     :type unit: int
     :param value: Measured temperature or None if no probe is connected
     :type value: int
-    :param prefix: Metric prefix of measurement
-    :type prefix: str
     """
 
-    UNIT_CELSIUS = 1
-    UNIT_FAHRENHEIT = 2
+    UNIT_CELSIUS = "C"
+    UNIT_FAHRENHEIT = "F"
 
     def __init__(self, unit, value):
+        if unit not in [self.UNIT_CELSIUS, self.UNIT_FAHRENHEIT]:
+            raise ValueError(f"Unknown temperature unit: {unit}")
         self.unit = unit
         self.value = value
 
@@ -46,13 +46,8 @@ class TemperatureMeasurement(Measurement):
 
     def __str__(self):
         value_str = "--" if self.value is None else self.value
-
-        if self.unit == self.UNIT_CELSIUS:
-            unit_str = "°C"
-        elif self.unit == self.UNIT_FAHRENHEIT:
-            unit_str = "F"
-
-        return f"{value_str} {unit_str}"
+        unit_str = self.unit
+        return f"{value_str}°{unit_str}"
 
 
 class ResistanceMeasurement(Measurement):

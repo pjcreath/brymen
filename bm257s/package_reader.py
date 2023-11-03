@@ -1,6 +1,7 @@
 """Read, organize and validate packages from data input"""
 import enum
 import threading
+from datetime import datetime
 
 
 class TruncatedPackage(Exception):
@@ -262,6 +263,7 @@ class PackageReader:
 
     def __init__(self, reader):
         self._reader = reader
+        self._log = None
 
         self._read_thread = threading.Thread(target=self._run)
         self._read_thread_stop = threading.Event()
@@ -271,13 +273,17 @@ class PackageReader:
 
         self._received_pkg = threading.Event()
 
-    def start(self):
+    def start(self, log=None):
         """Start reading packages in a seperate thread
 
         Call this at most once until you call stop().
+
+        :param log: filepath at which to log incoming data (optional)
         """
         self._received_pkg.clear()
         self._last_pkg = None
+        if log:
+            self._log = open(log, "w", encoding="utf-8")  # pylint: disable=R1732
 
         self._read_thread_stop.clear()
         self._read_thread.start()
@@ -289,8 +295,19 @@ class PackageReader:
         """
         self._read_thread_stop.set()
         self._read_thread.join()
+        if self._log:
+            self._log.close()
+            self._log = None
 
         self._read_thread = threading.Thread(target=self._run)
+
+    def log(self, message):
+        """Log the message to the logfile (if we're logging)."""
+        if self._log:
+            now = datetime.now()
+            self._log.write(f"{now} {message}\n")
+            self._log.flush()
+        return
 
     def is_running(self):
         """Check if the reader is currently running
@@ -345,6 +362,7 @@ class PackageReader:
                 if len(data) >= self.PKG_LEN:
                     try:
                         pkg = parse_package(data[: self.PKG_LEN])
+                        self.log(data.hex(" "))
                         data = data[self.PKG_LEN :]
                         with self._last_pkg_lock:
                             self._last_pkg = pkg

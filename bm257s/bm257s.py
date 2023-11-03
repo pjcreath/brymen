@@ -85,7 +85,7 @@ class BM257sSerialInterface:
     :raise RuntimeError: If opening port is not possible
     """
 
-    def __init__(self, port="/dev/ttyUSB0", read_timeout=0.1):
+    def __init__(self, port="/dev/ttyUSB0", read_timeout=0.1, log=None):
         try:
             self._serial = serial.Serial(
                 port,
@@ -99,13 +99,14 @@ class BM257sSerialInterface:
             raise RuntimeError(f"Could not open port {port}", ex) from ex
 
         self._package_reader = PackageReader(self._serial)
+        self._log = log
 
     def start(self):
         """Start reading serial measurements
 
         Call this at most once before calling stop()
         """
-        self._package_reader.start()
+        self._package_reader.start(log=self._log)
 
     def stop(self):
         """Stop reading serial measurements

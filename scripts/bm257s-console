@@ -91,9 +91,12 @@ if __name__ == "__main__":
                         default="/dev/ttyUSB0",
                         help="serial port to use, defaults to /dev/ttyUSB0"
                        )
+    parser.add_argument("--log", default=None,
+                        help="filepath at which to log incoming data"
+                       )
     args = parser.parse_args()
     try:
-        with bm257s.BM257sSerialInterface(port=args.port, read_timeout=1.0) as mm:
+        with bm257s.BM257sSerialInterface(port=args.port, read_timeout=1.0, log=args.log) as mm:
             try:
                 curses.wrapper(main, mm)
             except KeyboardInterrupt:

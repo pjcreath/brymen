@@ -107,8 +107,8 @@ def parse_package(pkg):
     :param pkg: Package to parse
     :type pkg: bm257s.package_parser.Package
 
-    :return: Multimeter measurement type and measurement
-    :rtype: tuple
+    :return: Multimeter measurement
+    :rtype: Measurement subclass
     """
     prefix = parse_prefix(pkg)
 

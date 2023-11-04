@@ -1,10 +1,12 @@
 """Read, organize and validate packages from data input"""
-# pylint: disable=R0902,R0913
+# pylint: disable=R0913
 
 import enum
 import queue
 import threading
 from datetime import datetime
+
+from .buffer import Buffer
 
 
 class TruncatedPackage(Exception):
@@ -276,10 +278,7 @@ class PackageReader:
         self._read_thread = threading.Thread(target=self._run)
         self._read_thread_stop = threading.Event()
 
-        self._last_pkg = None
-        self._last_pkg_lock = threading.Lock()
-
-        self._received_pkg = threading.Event()
+        self._buffer = Buffer()
 
     def start(self, log=None):
         """Start reading packages in a seperate thread
@@ -288,8 +287,7 @@ class PackageReader:
 
         :param log: filepath at which to log incoming data (optional)
         """
-        self._received_pkg.clear()
-        self._last_pkg = None
+        self._buffer.clear()
         if log:
             self._log = open(log, "w", encoding="utf-8")  # pylint: disable=R1732
 
@@ -336,7 +334,7 @@ class PackageReader:
         :rtype: bool
         """
         self._propagate_exceptions()
-        return self._received_pkg.wait(timeout)
+        return self._buffer.wait(timeout)
 
     def next_package(self):
         """Returns the last received package and removes it from storage
@@ -345,13 +343,11 @@ class PackageReader:
         :rtype: Package
         """
         self._propagate_exceptions()
-        with self._last_pkg_lock:
-            result = self._last_pkg
-            self._last_pkg = None
-
-            self._received_pkg.clear()
-
-            return result
+        try:
+            pkg = self._buffer.read_latest(clear=True)
+        except IndexError:
+            pkg = None
+        return pkg
 
     def _propagate_exceptions(self):
         """Propagate any exceptions that cause the thread to stop"""
@@ -391,9 +387,7 @@ class PackageReader:
                         pkg = parse_package(data[: self.PKG_LEN])
                         self.log(data.hex(" "), pkg.timestamp)
                         data = data[self.PKG_LEN :]
-                        with self._last_pkg_lock:
-                            self._last_pkg = pkg
-                            self._received_pkg.set()
+                        self._buffer.append(pkg)
                     except TruncatedPackage as e:
                         data = data[e.length :]
         return

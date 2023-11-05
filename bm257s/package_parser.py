@@ -83,7 +83,11 @@ def parse_temperature(pkg, _unused_prefix):
     except KeyError as e:
         raise ValueError(f"Unknown temperature: {text}") from e
 
-    value = int(text[:-1])
+    text = text[:-1]
+    if text == "---":
+        value = None
+    else:
+        value = int(text)
     return TemperatureMeasurement(
         unit=unit, display_value=value, timestamp=pkg.timestamp
     )
@@ -135,3 +139,40 @@ def parse_package(pkg):
             raise RuntimeError("Cannot parse multimeter package configuration")
         fn = parse_temperature
     return fn(pkg, prefix)
+
+
+def parse_package_list(pkgs, mode_change="exception"):
+    """Parse a list of packages to obtain a list of multimeter measurements,
+    making sure to return only measurements of the same thing.
+
+    :param pkgs: List of packages to parse
+    :type pkgs: list(bm257s.package_parser.Package)
+    :param mode_change: Specifies how to respond if meter's mode changed
+        and it started measuring something different within the list.
+        "exception": Raise a RuntimeError (default)
+        "truncate": Drop any older packets that don't match the most
+            recent measurement.
+        "ignore": Keep all the measurements. Note that measurement.average
+            will raise an exception if they are not all the same unit.
+    :param mode_change: str
+
+    :return: List of Multimeter measurements
+    :rtype: list(Measurement subclass)
+    """
+    valid_set = set(["exception", "truncate", "ignore"])
+    if mode_change not in valid_set:
+        raise RuntimeError(f"mode_change not one of {valid_set}")
+
+    meas = []
+    for p in pkgs:
+        m = parse_package(p)
+        if meas and m.unit != meas[-1].unit:
+            if mode_change == "exception":
+                raise RuntimeError(
+                    f"Meter changed from reading {meas[-1].unit} to {m.unit}"
+                )
+            if mode_change == "truncate":
+                # Drop any previous samples that measured something different
+                meas = []
+        meas.append(m)
+    return meas

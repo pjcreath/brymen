@@ -21,8 +21,10 @@ def average(measurements):
     for m in measurements:
         if m.unit != meas.unit:
             raise ValueError("Measurement unit changed while monitoring!")
-        values.append(m.value)
-    meas.value = statistics.mean(values)
+        if m.value is not None:
+            values.append(m.value)
+    if values:
+        meas.value = statistics.mean(values)
     meas.values = values
     return meas
 
@@ -111,8 +113,7 @@ class TemperatureMeasurement(Measurement):
         super().__init__(display_value, timestamp=timestamp)
         self.display_unit = f"°{self.unit}"
         if display_value is None:
-            self.display_value = "--"
-            self.display_unit = ""
+            self.display_value = "---"
         return
 
 
@@ -158,6 +159,8 @@ class VoltageMeasurement(Measurement):
     ):
         self.current = current
         super().__init__(display_value, prefix=prefix, timestamp=timestamp)
+        if self.current == self.CURRENT_AC:
+            self.unit = "Vrms"
         return
 
     def __str__(self):

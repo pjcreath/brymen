@@ -1,7 +1,8 @@
 """Serial interface library for brymen bm257s multimeters"""
 import serial
 
-from .package_parser import parse_package
+import bm257s.package_parser as parser
+
 from .package_reader import PackageReader
 
 # def parse_lcd(lcd):
@@ -126,7 +127,7 @@ class BM257sSerialInterface:
         if pkg is None:
             return None
 
-        return parse_package(pkg)
+        return parser.parse_package(pkg)
 
     def read_all(self, clear=True):
         """Reads all measurements from the multimeter
@@ -140,8 +141,8 @@ class BM257sSerialInterface:
         pkgs = self._package_reader.all_packages(clear=clear)
         if not pkgs:
             return None
-        meas = [parse_package(p) for p in pkgs]
-        return meas
+
+        return parser.parse_package_list(pkgs, mode_change="truncate")
 
     def close(self):
         """Closes the used serial port"""

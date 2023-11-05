@@ -44,7 +44,13 @@ def main(stdscr, interface):
     while 1:
         try:
             # Read from interface
-            measurement = interface.read()
+            if interface.window:
+                measurements = interface.read_all(clear=False)
+                measurement = bm257s.measurement.average(measurements)
+                if measurement is not None:
+                    measurement.value = round(measurement.value, 3)
+            else:
+                measurement = interface.read()
             if measurement is not None:
                 win_qty.addstr(0, 0, f"{measurement.type:>19}")
                 win_meas.addstr(0, 0, f"{str(measurement):>19}")
@@ -91,12 +97,15 @@ if __name__ == "__main__":
                         default="/dev/ttyUSB0",
                         help="serial port to use, defaults to /dev/ttyUSB0"
                        )
+    parser.add_argument("--window", default=None, type=float, metavar="SECONDS",
+                        help="how long to average samples, defaults to single sample",
+                       )
     parser.add_argument("--log", default=None,
                         help="filepath at which to log incoming data"
                        )
     args = parser.parse_args()
     try:
-        with bm257s.BM257sSerialInterface(port=args.port, read_timeout=1.0, log=args.log) as mm:
+        with bm257s.BM257sSerialInterface(port=args.port, read_timeout=1.0, window=args.window, log=args.log) as mm:
             try:
                 curses.wrapper(main, mm)
             except KeyboardInterrupt:

@@ -2,6 +2,8 @@
 
 import unittest
 
+import bm257s.measurement
+import bm257s.package_parser
 from bm257s.package_reader import PackageReader, TruncatedPackage, parse_package
 
 from .helpers.mock_data_reader import MockDataReader
@@ -23,7 +25,7 @@ class TestPackageReader(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._mock_reader = MockDataReader()
-        cls._pkg_reader = PackageReader(cls._mock_reader)
+        cls._pkg_reader = PackageReader(cls._mock_reader, window=0.5)
 
     def setUp(self):
         """Set up package reader to get tested"""
@@ -162,6 +164,59 @@ class TestPackageReader(unittest.TestCase):
             )
 
             check_example_pkg(self, pkg)
+
+    def test_windowed_buffer(self):
+        """Test handling of multiple packets in a windowed buffer"""
+        self.assertTrue(
+            self._mock_reader.all_data_used,
+            "Mock data should be empty before test start",
+        )
+
+        test_packages = {
+            "02 1c 20 3e 4b 5e 6b 7f 8b 9a ad b0 c0 d1 e5": 0.02,  # mV
+            "02 1c 20 3e 4b 51 6a 74 8e 9c af b0 c0 d0 e5": 0.149,  # V
+            "02 1c 20 3f 4b 5f 6b 7e 87 9e af b0 c0 d0 e5": -0.068,  # V
+        }
+        data = bytes.fromhex(" ".join(test_packages.keys()))
+
+        self._mock_reader.set_next_data(data)
+        self.assertTrue(
+            self._pkg_reader.wait_for_package(self.READER_TIMEOUT),
+            "Read packages from raw data reader (windowed)",
+        )
+        read_packages = self._pkg_reader.all_packages()
+        self.assertTrue(
+            self._mock_reader.all_data_used,
+            "Did not read all data from packages (windowed)",
+        )
+
+        # Check list of packages
+        self.assertEqual(
+            len(read_packages),
+            len(test_packages),
+            "Packages could not get parsed (windowed)",
+        )
+        measurements = [bm257s.package_parser.parse_package(p) for p in read_packages]
+        read_values = [m.value for m in measurements]
+        test_values = list(test_packages.values())
+        self.assertEqual(
+            read_values,
+            test_values,
+            "Package values were not correctly parsed (windowed)",
+        )
+
+        # Check measurement.average()
+        avg = bm257s.measurement.average(measurements)
+        self.assertEqual(
+            avg.values,
+            test_values,
+            "measurement.average() did not preserve all values",
+        )
+        self.assertAlmostEqual(
+            avg.value,
+            sum(test_values) / len(test_values),
+            msg="measurement.average() did not average all values",
+        )
 
 
 class TestPackageParsing(unittest.TestCase):

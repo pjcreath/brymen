@@ -270,7 +270,7 @@ class PackageReader:
     PKG_LEN = 15
     PKG_START = 0b00000010  # Start of first package byte
 
-    def __init__(self, reader):
+    def __init__(self, reader, window=None):
         self._reader = reader
         self._log = None
         self._exception = queue.Queue(maxsize=1)
@@ -278,7 +278,7 @@ class PackageReader:
         self._read_thread = threading.Thread(target=self._run)
         self._read_thread_stop = threading.Event()
 
-        self._buffer = Buffer()
+        self._buffer = Buffer(window=window)
 
     def start(self, log=None):
         """Start reading packages in a seperate thread
@@ -348,6 +348,19 @@ class PackageReader:
         except IndexError:
             pkg = None
         return pkg
+
+    def all_packages(self, clear=True):
+        """Returns all the packages currently in the buffer and
+        optionally clears the buffer
+
+        :param clear: whether to clear the buffer
+        :type clear: bool
+
+        :return: List of packages
+        :rtype: list(Package)
+        """
+        self._propagate_exceptions()
+        return self._buffer.read_all(clear=clear)
 
     def _propagate_exceptions(self):
         """Propagate any exceptions that cause the thread to stop"""

@@ -1,7 +1,30 @@
 """Representation of measurements taken by bm257s multimeter"""
 # pylint: disable=R0903
 # Remove this once usage becomes clearer
+import copy
+import statistics
 from datetime import datetime
+
+
+def average(measurements):
+    """Combine a list of measurements into a single composite measurement
+    whose value is the average of all the measurements
+
+    :return: measurement with an extra .values attribute containing all
+        of the numeric values in the set of measurements
+    :rtype: Measurement subclass (or None)
+    """
+    if not measurements:
+        return None
+    meas = copy.copy(measurements[-1])  # Use the latest timestamp
+    values = []
+    for m in measurements:
+        if m.unit != meas.unit:
+            raise ValueError("Measurement unit changed while monitoring!")
+        values.append(m.value)
+    meas.value = statistics.mean(values)
+    meas.values = values
+    return meas
 
 
 class Measurement:
@@ -100,6 +123,7 @@ class VoltageMeasurement(Measurement):
     CURRENT_DC = 2
 
     def __init__(self, value, current, prefix=Measurement.PREFIX_NONE, timestamp=None):
+        self.unit = "V"
         self.value = value
         self.current = current
 

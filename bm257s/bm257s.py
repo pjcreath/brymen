@@ -85,7 +85,7 @@ class BM257sSerialInterface:
     :raise RuntimeError: If opening port is not possible
     """
 
-    def __init__(self, port="/dev/ttyUSB0", read_timeout=0.1, log=None):
+    def __init__(self, port="/dev/ttyUSB0", read_timeout=0.1, window=None, log=None):
         try:
             self._serial = serial.Serial(
                 port,
@@ -98,7 +98,8 @@ class BM257sSerialInterface:
         except serial.SerialException as ex:
             raise RuntimeError(f"Could not open port {port}", ex) from ex
 
-        self._package_reader = PackageReader(self._serial)
+        self.window = window
+        self._package_reader = PackageReader(self._serial, window=window)
         self._log = log
 
     def start(self):
@@ -118,7 +119,7 @@ class BM257sSerialInterface:
     def read(self):
         """Reads latest measurement from multimeter
 
-        :return: measurement
+        :return: measurement or None
         :rtype: Measurement
         """
         pkg = self._package_reader.next_package()
@@ -126,6 +127,21 @@ class BM257sSerialInterface:
             return None
 
         return parse_package(pkg)
+
+    def read_all(self, clear=True):
+        """Reads all measurements from the multimeter
+
+        :param clear: whether to clear all trailing measurements upon read
+        :type clear: bool
+
+        :return: list of measurements or None
+        :rtype: list(Measurement)
+        """
+        pkgs = self._package_reader.all_packages(clear=clear)
+        if not pkgs:
+            return None
+        meas = [parse_package(p) for p in pkgs]
+        return meas
 
     def close(self):
         """Closes the used serial port"""

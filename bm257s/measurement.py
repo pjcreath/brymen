@@ -34,14 +34,29 @@ class Measurement:
     :type prefix: str
     """
 
+    PRECISION = 4  # Other multimeters might have greater display precision
+    PREFIX_MULTIPLIERS = {
+        "": 1.0,
+        "k": 1000.0,
+        "M": 1000000.0,
+        "m": 0.001,
+        "u": 0.000001,
+    }
     PREFIX_NONE = ""
     PREFIX_KILO = "k"
     PREFIX_MEGA = "M"
     PREFIX_MILLI = "m"
     PREFIX_MICRO = "u"
+    unit = None  # should be overridden by all subclasses
 
-    def __init__(self, prefix=PREFIX_NONE, timestamp=None):
+    def __init__(self, display_value, prefix=PREFIX_NONE, timestamp=None):
         self.prefix = prefix
+        self.display_unit = f"{self.prefix}{self.unit}"
+        self.display_value = display_value
+        if display_value is None:
+            self._value = None
+        else:
+            self._value = display_value * self.PREFIX_MULTIPLIERS[self.prefix]
         if timestamp is None:
             timestamp = datetime.now()
         self.timestamp = timestamp
@@ -54,13 +69,32 @@ class Measurement:
         """
         return self._type  # pylint: disable=E1101
 
+    @property
+    def value(self):
+        """Value of measurement"""
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        """Update display_value when value is updated"""
+        self._value = value
+        if value is None:
+            self.display_value = None
+        else:
+            display_value = value / self.PREFIX_MULTIPLIERS[self.prefix]
+            self.display_value = round(display_value, self.PRECISION)
+        return
+
+    def __str__(self):
+        return f"{self.display_value}{self.display_unit}"
+
 
 class TemperatureMeasurement(Measurement):
     """Representation of temperature measurement
 
     :param unit: Unit of measurement, either UNIT_CELSIUS or UNIT_FAHRENHEIT
     :type unit: int
-    :param value: Measured temperature or None if no probe is connected
+    :param display_value: Measured temperature or None if no probe is connected
     :type value: int
     """
 
@@ -69,18 +103,17 @@ class TemperatureMeasurement(Measurement):
     UNIT_CELSIUS = "C"
     UNIT_FAHRENHEIT = "F"
 
-    def __init__(self, unit, value, timestamp=None):
+    def __init__(self, unit, display_value, timestamp=None):
         if unit not in [self.UNIT_CELSIUS, self.UNIT_FAHRENHEIT]:
             raise ValueError(f"Unknown temperature unit: {unit}")
         self.unit = unit
-        self.value = value
 
-        super().__init__(timestamp=timestamp)
-
-    def __str__(self):
-        value_str = "--" if self.value is None else self.value
-        unit_str = self.unit
-        return f"{value_str}°{unit_str}"
+        super().__init__(display_value, timestamp=timestamp)
+        self.display_unit = f"°{self.unit}"
+        if display_value is None:
+            self.display_value = "--"
+            self.display_unit = ""
+        return
 
 
 class ResistanceMeasurement(Measurement):
@@ -93,17 +126,14 @@ class ResistanceMeasurement(Measurement):
     """
 
     _type = "Resistance"
+    unit = "Ω"
 
-    def __init__(self, value, prefix=Measurement.PREFIX_NONE, timestamp=None):
-        self.value = value
-
-        super().__init__(prefix, timestamp=timestamp)
-
-    def __str__(self):
-        if self.value is not None:
-            return f"{self.value}{self.prefix}Ω"
-
-        return "0.L"
+    def __init__(self, display_value, prefix=Measurement.PREFIX_NONE, timestamp=None):
+        super().__init__(display_value, prefix, timestamp=timestamp)
+        if display_value is None:
+            self.display_value = "0.L"
+            self.display_unit = ""
+        return
 
 
 class VoltageMeasurement(Measurement):
@@ -118,17 +148,18 @@ class VoltageMeasurement(Measurement):
     """
 
     _type = "Voltage"
+    unit = "V"
 
     CURRENT_AC = 1
     CURRENT_DC = 2
 
-    def __init__(self, value, current, prefix=Measurement.PREFIX_NONE, timestamp=None):
-        self.unit = "V"
-        self.value = value
+    def __init__(
+        self, display_value, current, prefix=Measurement.PREFIX_NONE, timestamp=None
+    ):
         self.current = current
-
-        super().__init__(prefix, timestamp=timestamp)
+        super().__init__(display_value, prefix=prefix, timestamp=timestamp)
+        return
 
     def __str__(self):
         current_postfix = {self.CURRENT_AC: " [~]", self.CURRENT_DC: ""}
-        return f"{self.value}{self.prefix}V{current_postfix[self.current]}"
+        return super().__str__() + current_postfix[self.current]

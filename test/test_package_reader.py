@@ -173,7 +173,7 @@ class TestPackageReader(unittest.TestCase):
         )
 
         test_packages = {
-            "02 1c 20 3e 4b 5e 6b 7f 8b 9a ad b0 c0 d1 e5": 0.02,  # mV
+            "02 1c 20 3e 4b 5e 6b 7f 8b 9a ad b0 c0 d1 e5": 0.00002,  # 0.02 mV
             "02 1c 20 3e 4b 51 6a 74 8e 9c af b0 c0 d0 e5": 0.149,  # V
             "02 1c 20 3f 4b 5f 6b 7e 87 9e af b0 c0 d0 e5": -0.068,  # V
         }

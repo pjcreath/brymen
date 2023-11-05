@@ -17,13 +17,18 @@ def parse_voltage(pkg, prefix):
     """
     value = pkg.segment_float()
 
-    if Symbol.AC in pkg.symbols:
-        current = VoltageMeasurement.CURRENT_AC
-    elif Symbol.DC in pkg.symbols:
-        current = VoltageMeasurement.CURRENT_DC
+    mapping = {
+        Symbol.AC: VoltageMeasurement.CURRENT_AC,
+        Symbol.DC: VoltageMeasurement.CURRENT_DC,
+    }
+    for symbol, current in mapping.items():
+        if symbol in pkg.symbols:
+            break
+    else:
+        raise ValueError("Unknown voltage type displayed")
 
     return VoltageMeasurement(
-        value=value, current=current, prefix=prefix, timestamp=pkg.timestamp
+        display_value=value, current=current, prefix=prefix, timestamp=pkg.timestamp
     )
 
 
@@ -69,15 +74,19 @@ def parse_temperature(pkg, _unused_prefix):
     text = pkg.segment_string()
 
     unit = text[-1]
-    if unit == "F":
-        unit = TemperatureMeasurement.UNIT_FAHRENHEIT
-    elif unit == "C":
-        unit = TemperatureMeasurement.UNIT_CELSIUS
-    else:
-        raise RuntimeError(f"Unknown temperature: {text}")
+    mapping = {
+        "F": TemperatureMeasurement.UNIT_FAHRENHEIT,
+        "C": TemperatureMeasurement.UNIT_CELSIUS,
+    }
+    try:
+        unit = mapping[unit]
+    except KeyError as e:
+        raise ValueError(f"Unknown temperature: {text}") from e
 
     value = int(text[:-1])
-    return TemperatureMeasurement(unit=unit, value=value, timestamp=pkg.timestamp)
+    return TemperatureMeasurement(
+        unit=unit, display_value=value, timestamp=pkg.timestamp
+    )
 
 
 def parse_prefix(pkg):
@@ -89,16 +98,18 @@ def parse_prefix(pkg):
     :return: Prefix shown in measurement
     :rtype: str
     """
-    if Symbol.KILO in pkg.symbols:
-        return Measurement.PREFIX_KILO
-    if Symbol.MEGA in pkg.symbols:
-        return Measurement.PREFIX_MEGA
-    if Symbol.MILLI in pkg.symbols:
-        return Measurement.PREFIX_MILLI
-    if Symbol.MICRO in pkg.symbols:
-        return Measurement.PREFIX_MICRO
-
-    return Measurement.PREFIX_NONE
+    mapping = {
+        Symbol.KILO: Measurement.PREFIX_KILO,
+        Symbol.MEGA: Measurement.PREFIX_MEGA,
+        Symbol.MILLI: Measurement.PREFIX_MILLI,
+        Symbol.MICRO: Measurement.PREFIX_MICRO,
+    }
+    for symbol, prefix in mapping.items():
+        if symbol in pkg.symbols:
+            break
+    else:
+        prefix = Measurement.PREFIX_NONE
+    return prefix
 
 
 def parse_package(pkg):
@@ -111,17 +122,16 @@ def parse_package(pkg):
     :rtype: Measurement subclass
     """
     prefix = parse_prefix(pkg)
-
-    if Symbol.VOLT in pkg.symbols:
-        return parse_voltage(pkg, prefix)
-
-    if Symbol.AMPERE in pkg.symbols:
-        return parse_current(pkg, prefix)
-
-    if Symbol.OHM in pkg.symbols:
-        return parse_resistance(pkg, prefix)
-
-    if pkg.symbols == set():
-        return parse_temperature(pkg, prefix)
-
-    raise RuntimeError("Cannot parse multimeter package configuration")
+    mapping = {
+        Symbol.VOLT: parse_voltage,
+        Symbol.AMPERE: parse_current,
+        Symbol.OHM: parse_resistance,
+    }
+    for symbol, fn in mapping.items():
+        if symbol in pkg.symbols:
+            break
+    else:
+        if pkg.symbols != set():
+            raise RuntimeError("Cannot parse multimeter package configuration")
+        fn = parse_temperature
+    return fn(pkg, prefix)

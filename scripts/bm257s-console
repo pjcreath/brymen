@@ -47,8 +47,6 @@ def main(stdscr, interface):
             if interface.window:
                 measurements = interface.read_all(clear=False)
                 measurement = bm257s.measurement.average(measurements)
-                if measurement is not None:
-                    measurement.value = round(measurement.value, 3)
             else:
                 measurement = interface.read()
             if measurement is not None:

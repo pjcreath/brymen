@@ -117,6 +117,17 @@ class BM257sSerialInterface:
         """
         self._package_reader.stop()
 
+    def wait(self, timeout=None):
+        """Block until a measurement is available
+
+        :param timeout: Maximum time to wait, or None for unlimited
+        :type timeout: float or None
+
+        :return: True if data is read, False if waiting timed out
+        :rtype: bool
+        """
+        return self._package_reader.wait_for_package(timeout)
+
     def read(self):
         """Reads latest measurement from multimeter
 

@@ -1,5 +1,3 @@
-* Add support for the remaining measurements on the BM257s.
-
 * Abstract package parsing into a base class and pass that parser to the package reader, in preparation to support additional Brymen meters.
 
 * Eventually it would be good to turn this into a generic Brymen package, supporting the following additional protocols:

@@ -170,6 +170,37 @@ class VoltageMeasurement(Measurement):
         return super().__str__() + current_postfix[self.current]
 
 
+class CurrentMeasurement(Measurement):
+    """Representation of current measurement
+
+    :param value: Measured current
+    :type value: float
+    :param coupling: Type of current measured
+    :type coupling: int
+    :param prefix: Metrix prefix of measurement
+    :type prefix: int
+    """
+
+    _type = "Current"
+    unit = "A"
+
+    COUPLING_AC = 1
+    COUPLING_DC = 2
+
+    def __init__(
+        self, display_value, coupling, prefix=Measurement.PREFIX_NONE, timestamp=None
+    ):
+        self.coupling = coupling
+        super().__init__(display_value, prefix=prefix, timestamp=timestamp)
+        if self.coupling == self.COUPLING_AC:
+            self.unit = "Arms"
+        return
+
+    def __str__(self):
+        postfix = {self.COUPLING_AC: " [~]", self.COUPLING_DC: ""}
+        return super().__str__() + postfix[self.coupling]
+
+
 class CapacitanceMeasurement(Measurement):
     """Representation of capacitance measurement
 

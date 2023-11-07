@@ -2,6 +2,7 @@
 
 from .measurement import (
     CapacitanceMeasurement,
+    CurrentMeasurement,
     Measurement,
     ResistanceMeasurement,
     TemperatureMeasurement,
@@ -47,9 +48,23 @@ def parse_current(pkg, prefix):
     :type prefix: str
 
     :return: Multimeter measurement type and measurement
-    :rtype: tuple
+    :rtype: CurrentMeasurement
     """
-    raise NotImplementedError("Type of measurement is not yet supported")
+    value = pkg.segment_float()
+
+    mapping = {
+        Symbol.AC: CurrentMeasurement.COUPLING_AC,
+        Symbol.DC: CurrentMeasurement.COUPLING_DC,
+    }
+    for symbol, coupling in mapping.items():
+        if symbol in pkg.symbols:
+            break
+    else:
+        raise ValueError("Unknown current type displayed")
+
+    return CurrentMeasurement(
+        display_value=value, coupling=coupling, prefix=prefix, timestamp=pkg.timestamp
+    )
 
 
 def parse_resistance(pkg, prefix):

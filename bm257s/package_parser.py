@@ -1,6 +1,11 @@
 """Parse package content to obtain measurement result"""
 
-from .measurement import Measurement, TemperatureMeasurement, VoltageMeasurement
+from .measurement import (
+    Measurement,
+    ResistanceMeasurement,
+    TemperatureMeasurement,
+    VoltageMeasurement,
+)
 from .package_reader import Symbol
 
 
@@ -13,7 +18,7 @@ def parse_voltage(pkg, prefix):
     :type prefix: str
 
     :return: Multimeter measurement type and measurement
-    :rtype: tuple
+    :rtype: VoltageMeasurement
     """
     value = pkg.segment_float()
 
@@ -55,9 +60,16 @@ def parse_resistance(pkg, prefix):
     :type prefix: str
 
     :return: Multimeter measurement type and measurement
-    :rtype: tuple
+    :rtype: ResistanceMeasurement
     """
-    raise NotImplementedError("Type of measurement is not yet supported")
+    raw_str = pkg.segment_string()
+    if "0.L" in raw_str:
+        value = None
+    else:
+        value = float(raw_str)
+    return ResistanceMeasurement(
+        display_value=value, prefix=prefix, timestamp=pkg.timestamp
+    )
 
 
 def parse_temperature(pkg, _unused_prefix):
@@ -69,7 +81,7 @@ def parse_temperature(pkg, _unused_prefix):
     :type prefix: str
 
     :return: Multimeter measurement type and measurement
-    :rtype: tuple
+    :rtype: TemperatureMeasurement
     """
     text = pkg.segment_string()
 

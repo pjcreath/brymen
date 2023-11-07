@@ -132,7 +132,7 @@ class ResistanceMeasurement(Measurement):
     def __init__(self, display_value, prefix=Measurement.PREFIX_NONE, timestamp=None):
         super().__init__(display_value, prefix, timestamp=timestamp)
         if display_value is None:
-            self.display_value = "0.L"
+            self.display_value = "OL"
             self.display_unit = ""
         return
 

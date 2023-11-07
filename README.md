@@ -71,18 +71,22 @@ For more detail, use the `help()` function in Python.
 Limitations
 -----------
 
-The library currently does currently not support all measuring modes. In the table below, "semi-complete" means that it will give you the correct values if you already have the mode selected on the meter.  "Complete" means it will also detect whether or not you are in the given mode.
+The library currently does not support all measuring modes. In the table below, "semi-complete" means that it will give you the correct values if you already have the mode selected on the meter.  "Complete" means it will also detect whether or not you are in the given mode.
 
 | Measuring mode   | Semi-Complete | Complete|
 |------------------|:-------------:|---------|
 | Temperature (°C) |               | X       |
 | Temperature (°F) |               | X       |
-| Resistance (Ω)   |               |         |
-| Resistance (kΩ)  |               |         |
-| Resistance (MΩ)  |               |         |
+| Resistance (Ω)   |               | X       |
+| Resistance (kΩ)  |               | X       |
+| Resistance (MΩ)  |               | X       |
 | Voltage DC (V)   |               | X       |
 | Voltage AC (V)   |               | X       |
-| Capacitance (F)  |               |         |
+| Current (uA)     |               |         |
+| Current (mA)     |               |         |
+| Current (A)      |               |         |
+| Capacitance (nF) |               |         |
+| Capacitance (uF) |               |         |
 
 Additionally, the library only supports a single Brymen protocol.  See [TODO.md](TODO.md).
 

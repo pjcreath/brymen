@@ -96,4 +96,9 @@ SAMPLE_PACKAGES = {
     "02 10 20 3e 4b 5e 67 78 8a 9e a4 b0 c0 d0 e0": ("Temperature", "67°F"),
     "02 10 20 3e 4b 50 6a 7c 8f 9e a1 b0 c0 d0 e0": ("Temperature", "19°C"),
     "02 10 20 30 44 50 64 70 84 9e a4 b0 c0 d0 e0": ("Temperature", "---°F"),
+    "02 18 20 3e 4b 50 6a 7e 8b 9b ad b0 c4 d0 e1": ("Resistance", "10.2Ω"),
+    "02 18 20 30 4a 5f 6b 7e 8b 9a ad b1 c4 d0 e1": ("Resistance", "1.002kΩ"),
+    "02 18 20 3e 4b 5e 67 71 8a 90 aa b1 c4 d0 e1": ("Resistance", "6.11kΩ"),
+    "02 18 20 3a 4d 5d 67 7e 8b 9c a7 b2 c4 d0 e1": ("Resistance", "2.505MΩ"),
+    "02 18 20 30 40 5e 6b 77 81 90 a0 b2 c4 d0 e1": ("Resistance", "OL"),
 }

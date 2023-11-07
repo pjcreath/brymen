@@ -1,6 +1,7 @@
 """Parse package content to obtain measurement result"""
 
 from .measurement import (
+    CapacitanceMeasurement,
     Measurement,
     ResistanceMeasurement,
     TemperatureMeasurement,
@@ -105,6 +106,23 @@ def parse_temperature(pkg, _unused_prefix):
     )
 
 
+def parse_capacitance(pkg, prefix):
+    """Parse capacitance measurement from package
+
+    :param pkg: Package to parse
+    :type pkg: bm257s.package_parser.Package
+    :param prefix: Metric prefix of measurement
+    :type prefix: str
+
+    :return: Multimeter measurement type and measurement
+    :rtype: CapacitanceMeasurement
+    """
+    value = pkg.segment_float()
+    return CapacitanceMeasurement(
+        display_value=value, prefix=prefix, timestamp=pkg.timestamp
+    )
+
+
 def parse_prefix(pkg):
     """Parse metrix prefix of measurement
 
@@ -119,6 +137,7 @@ def parse_prefix(pkg):
         Symbol.MEGA: Measurement.PREFIX_MEGA,
         Symbol.MILLI: Measurement.PREFIX_MILLI,
         Symbol.MICRO: Measurement.PREFIX_MICRO,
+        Symbol.NANO: Measurement.PREFIX_NANO,
     }
     for symbol, prefix in mapping.items():
         if symbol in pkg.symbols:
@@ -142,6 +161,7 @@ def parse_package(pkg):
         Symbol.VOLT: parse_voltage,
         Symbol.AMPERE: parse_current,
         Symbol.OHM: parse_resistance,
+        Symbol.FARAD: parse_capacitance,
     }
     for symbol, fn in mapping.items():
         if symbol in pkg.symbols:

@@ -101,4 +101,8 @@ SAMPLE_PACKAGES = {
     "02 18 20 3e 4b 5e 67 71 8a 90 aa b1 c4 d0 e1": ("Resistance", "6.11kΩ"),
     "02 18 20 3a 4d 5d 67 7e 8b 9c a7 b2 c4 d0 e1": ("Resistance", "2.505MΩ"),
     "02 18 20 30 40 5e 6b 77 81 90 a0 b2 c4 d0 e1": ("Resistance", "OL"),
+    "02 18 20 3e 4b 5e 6b 71 8a 9a ad b0 c1 d4 e0": ("Capacitance", "0.12nF"),
+    "02 18 20 30 4a 5c 6f 7e 8b 9d a7 b0 c1 d4 e0": ("Capacitance", "190.5nF"),
+    "02 18 20 30 4a 5b 6d 74 8e 90 aa b0 c0 d6 e0": ("Capacitance", "1.241uF"),
+    "02 18 20 3a 4d 58 6a 7d 8f 9c a7 b0 c0 d6 e0": ("Capacitance", "27.95uF"),
 }

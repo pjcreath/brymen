@@ -85,8 +85,8 @@ The library currently does not support all measuring modes. In the table below, 
 | Current (uA)     |               |         |
 | Current (mA)     |               |         |
 | Current (A)      |               |         |
-| Capacitance (nF) |               |         |
-| Capacitance (uF) |               |         |
+| Capacitance (nF) |               | X       |
+| Capacitance (uF) |               | X       |
 
 Additionally, the library only supports a single Brymen protocol.  See [TODO.md](TODO.md).
 

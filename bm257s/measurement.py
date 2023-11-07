@@ -39,16 +39,18 @@ class Measurement:
     PRECISION = 4  # Other multimeters might have greater display precision
     PREFIX_MULTIPLIERS = {
         "": 1.0,
-        "k": 1000.0,
-        "M": 1000000.0,
-        "m": 0.001,
-        "u": 0.000001,
+        "k": 1.0e03,
+        "M": 1.0e06,
+        "m": 1.0e-03,
+        "u": 1.0e-06,
+        "n": 1.0e-09,
     }
     PREFIX_NONE = ""
     PREFIX_KILO = "k"
     PREFIX_MEGA = "M"
     PREFIX_MILLI = "m"
     PREFIX_MICRO = "u"
+    PREFIX_NANO = "n"
     unit = None  # should be overridden by all subclasses
 
     def __init__(self, display_value, prefix=PREFIX_NONE, timestamp=None):
@@ -166,3 +168,16 @@ class VoltageMeasurement(Measurement):
     def __str__(self):
         current_postfix = {self.CURRENT_AC: " [~]", self.CURRENT_DC: ""}
         return super().__str__() + current_postfix[self.current]
+
+
+class CapacitanceMeasurement(Measurement):
+    """Representation of capacitance measurement
+
+    :param display_value: Measured capacitance as displayed on meter
+    :type value: float
+    :param prefix: Metrix prefix of measurement
+    :type prefix: int
+    """
+
+    _type = "Capacitance"
+    unit = "F"

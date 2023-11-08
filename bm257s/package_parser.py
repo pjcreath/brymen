@@ -3,12 +3,27 @@
 from .measurement import (
     CapacitanceMeasurement,
     CurrentMeasurement,
+    DiodeTest,
     Measurement,
     ResistanceMeasurement,
     TemperatureMeasurement,
+    TextDisplay,
     VoltageMeasurement,
 )
 from .package_reader import Symbol
+
+
+def parse_text(pkg, _prefix):
+    """Parse text display from package
+
+    :param pkg: Package to parse
+    :type pkg: bm257s.package_parser.Package
+
+    :return: Measurement subclass whose display_value is the text
+    :rtype: TextDisplay
+    """
+    raw_str = pkg.segment_string()
+    return TextDisplay(raw_str, timestamp=pkg.timestamp)
 
 
 def parse_voltage(pkg, prefix):
@@ -22,7 +37,13 @@ def parse_voltage(pkg, prefix):
     :return: Multimeter measurement type and measurement
     :rtype: VoltageMeasurement
     """
-    value = pkg.segment_float()
+    raw_str = pkg.segment_string()
+
+    if ".0L" in raw_str:
+        # Only seen in diode test
+        value = None
+    else:
+        value = float(raw_str)
 
     mapping = {
         Symbol.AC: VoltageMeasurement.CURRENT_AC,
@@ -32,8 +53,10 @@ def parse_voltage(pkg, prefix):
         if symbol in pkg.symbols:
             break
     else:
-        raise ValueError("Unknown voltage type displayed")
+        return DiodeTest(display_value=value, prefix=prefix, timestamp=pkg.timestamp)
 
+    if value is None:
+        raise ValueError(f"unexpected voltage display: '{raw_str}'")
     return VoltageMeasurement(
         display_value=value, current=current, prefix=prefix, timestamp=pkg.timestamp
     )
@@ -81,6 +104,8 @@ def parse_resistance(pkg, prefix):
     raw_str = pkg.segment_string()
     if "0.L" in raw_str:
         value = None
+    elif "0L." in raw_str:  # continuity test mode
+        value = None
     else:
         value = float(raw_str)
     return ResistanceMeasurement(
@@ -108,8 +133,11 @@ def parse_temperature(pkg, _unused_prefix):
     }
     try:
         unit = mapping[unit]
-    except KeyError as e:
-        raise ValueError(f"Unknown temperature: {text}") from e
+    except KeyError:
+        # When the thermocouple is attached while monitoring,
+        # there are sometimes transient 4-digit readings.
+        unit = "?"
+        text = "---?"
 
     text = text[:-1]
     if text == "---":
@@ -182,9 +210,14 @@ def parse_package(pkg):
         if symbol in pkg.symbols:
             break
     else:
-        if pkg.symbols != set():
-            raise RuntimeError("Cannot parse multimeter package configuration")
-        fn = parse_temperature
+        if pkg.symbols == set([Symbol.LOZ]):
+            fn = parse_text
+        elif pkg.symbols == set():
+            fn = parse_temperature
+        else:
+            raise RuntimeError(
+                f"Cannot parse multimeter package configuration: {pkg.symbols}"
+            )
     return fn(pkg, prefix)
 
 

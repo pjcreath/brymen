@@ -97,6 +97,10 @@ class Package:
             (False, False, False, False, False, False, True): "-",
             (False, False, False, False, False, False, False): " ",
             (False, False, False, True, True, True, False): "L",
+            (True, True, True, False, True, True, True): "A",
+            (False, False, True, True, True, False, False): "u",
+            (False, False, False, True, True, True, True): "t",
+            (False, False, True, True, True, False, True): "o",
         }
 
         if self.segments[pos] in character_segments:

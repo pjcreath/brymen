@@ -108,7 +108,7 @@ class TemperatureMeasurement(Measurement):
     UNIT_FAHRENHEIT = "F"
 
     def __init__(self, unit, display_value, timestamp=None):
-        if unit not in [self.UNIT_CELSIUS, self.UNIT_FAHRENHEIT]:
+        if unit not in [self.UNIT_CELSIUS, self.UNIT_FAHRENHEIT, "?"]:
             raise ValueError(f"Unknown temperature unit: {unit}")
         self.unit = unit
 
@@ -133,6 +133,26 @@ class ResistanceMeasurement(Measurement):
 
     def __init__(self, display_value, prefix=Measurement.PREFIX_NONE, timestamp=None):
         super().__init__(display_value, prefix, timestamp=timestamp)
+        if display_value is None:
+            self.display_value = "OL"
+            self.display_unit = ""
+        return
+
+
+class DiodeTest(Measurement):
+    """Representation of diode test
+
+    :param value: Measured voltage
+    :type value: float
+    :param prefix: Metrix prefix of measurement
+    :type prefix: int
+    """
+
+    _type = "Diode"
+    unit = "V"
+
+    def __init__(self, display_value, prefix=Measurement.PREFIX_NONE, timestamp=None):
+        super().__init__(display_value, prefix=prefix, timestamp=timestamp)
         if display_value is None:
             self.display_value = "OL"
             self.display_unit = ""
@@ -212,3 +232,22 @@ class CapacitanceMeasurement(Measurement):
 
     _type = "Capacitance"
     unit = "F"
+
+
+class TextDisplay(Measurement):
+    """Representation of capacitance measurement
+
+    :param display_value: Measured capacitance as displayed on meter
+    :type value: float
+    :param prefix: Metrix prefix of measurement
+    :type prefix: int
+    """
+
+    _type = "[Text]"
+    unit = ""
+
+    def __init__(self, display_value, timestamp=None):
+        super().__init__(None, timestamp=timestamp)
+        self._type = display_value
+        self.display_value = ""
+        return

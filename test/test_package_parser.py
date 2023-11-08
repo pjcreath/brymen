@@ -96,11 +96,13 @@ SAMPLE_PACKAGES = {
     "02 10 20 3e 4b 5e 67 78 8a 9e a4 b0 c0 d0 e0": ("Temperature", "67°F"),
     "02 10 20 3e 4b 50 6a 7c 8f 9e a1 b0 c0 d0 e0": ("Temperature", "19°C"),
     "02 10 20 30 44 50 64 70 84 9e a4 b0 c0 d0 e0": ("Temperature", "---°F"),
+    "02 10 20 3a 4d 5e 6b 7e 8b 9a ad b0 c0 d0 e0": ("Temperature", "---°?"),  # noise
     "02 18 20 3e 4b 50 6a 7e 8b 9b ad b0 c4 d0 e1": ("Resistance", "10.2Ω"),
     "02 18 20 30 4a 5f 6b 7e 8b 9a ad b1 c4 d0 e1": ("Resistance", "1.002kΩ"),
     "02 18 20 3e 4b 5e 67 71 8a 90 aa b1 c4 d0 e1": ("Resistance", "6.11kΩ"),
     "02 18 20 3a 4d 5d 67 7e 8b 9c a7 b2 c4 d0 e1": ("Resistance", "2.505MΩ"),
     "02 18 20 30 40 5e 6b 77 81 90 a0 b2 c4 d0 e1": ("Resistance", "OL"),
+    "02 10 28 30 40 5e 6b 76 81 91 a0 b0 c4 d0 e1": ("Resistance", "OL"),  # continuity
     "02 18 20 3e 4b 5e 6b 71 8a 9a ad b0 c1 d4 e0": ("Capacitance", "0.12nF"),
     "02 18 20 30 4a 5c 6f 7e 8b 9d a7 b0 c1 d4 e0": ("Capacitance", "190.5nF"),
     "02 18 20 30 4a 5b 6d 74 8e 90 aa b0 c0 d6 e0": ("Capacitance", "1.241uF"),
@@ -110,4 +112,7 @@ SAMPLE_PACKAGES = {
     "02 14 20 3e 4b 50 6a 7a 8d 91 aa b0 c8 d9 e2": ("Current", "12.1mA"),
     "02 14 20 3e 4b 58 6a 79 8a 9e af b0 c8 d8 e2": ("Current", "7.78A"),
     "02 1a 20 3e 4b 5f 6b 7e 8b 9c a7 b8 c0 d0 e3": ("Current", "0.005A [~]"),
+    "02 10 20 3f 4b 5f 6b 7e 8b 9e ab b0 c0 d0 e4": ("Diode", "-0.0V"),
+    "02 10 20 30 40 5f 6b 76 81 90 a0 b0 c0 d0 e4": ("Diode", "OL"),
+    "02 10 22 3e 4e 52 63 76 85 92 a7 b0 c0 d0 e0": ("Auto", ""),
 }

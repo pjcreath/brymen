@@ -101,6 +101,7 @@ class Package:
             (False, False, True, True, True, False, False): "u",
             (False, False, False, True, True, True, True): "t",
             (False, False, True, True, True, False, True): "o",
+            (True, False, False, True, True, True, True): "E",
         }
 
         if self.segments[pos] in character_segments:

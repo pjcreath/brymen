@@ -254,6 +254,19 @@ class FrequencyMeasurement(Measurement):
     unit = "Hz"
 
 
+class ElectricFieldMeasurement(Measurement):
+    """Representation of electric field measurement
+
+    :param display_value: Measured frequency as displayed on meter
+    :type value: float
+    :param properties: Properties common to any measurements
+    :type properties: dict
+    """
+
+    _type = "Electric Field"
+    unit = "V"
+
+
 class TextDisplay(Measurement):
     """Representation of capacitance measurement
 

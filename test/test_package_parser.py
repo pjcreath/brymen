@@ -144,4 +144,7 @@ SAMPLE_PACKAGES = {
     "02 18 20 34 4e 5c 6f 7d 8f 9e af b1 c2 d0 e1": ("Frequency", "49.98kHz"),
     "02 18 20 30 4a 5f 6b 7e 8b 9e ab b2 c2 d0 e1": ("Frequency", "1.0MHz"),
     "02 10 22 3e 4e 52 63 76 85 92 a7 b0 c0 d0 e0": ("Auto", ""),
+    "02 10 20 30 40 5e 65 7f 84 91 a0 b0 c0 d0 e0": ("Electric Field", "0.0V"),
+    "02 10 20 31 40 50 60 70 80 90 a0 b0 c0 d0 e0": ("Electric Field", "20.0V"),
+    "02 10 20 31 44 50 64 70 84 90 a4 b0 c0 d0 e0": ("Electric Field", "440.0V"),
 }

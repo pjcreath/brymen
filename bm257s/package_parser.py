@@ -6,6 +6,7 @@ from .measurement import (
     CapacitanceMeasurement,
     CurrentMeasurement,
     DiodeTest,
+    ElectricFieldMeasurement,
     FrequencyMeasurement,
     Measurement,
     ResistanceMeasurement,
@@ -110,6 +111,36 @@ def parse_resistance(pkg, properties):
     else:
         value = float(raw_str)
     return ResistanceMeasurement(value, properties)
+
+
+def _is_electric_field(pkg):
+    raw_str = pkg.segment_string().strip()
+    if raw_str == "E.F.":
+        return True
+    chars = set(list(raw_str))
+    if chars == set(["-"]):
+        return True
+    return False
+
+
+def parse_electric_field(pkg, properties):
+    """Parse electric field measurement from package
+
+    :param pkg: Package to parse
+    :type pkg: bm257s.package_parser.Package
+    :param properties: Properties common to any measurements
+    :type properties: dict
+
+    :return: Multimeter measurement
+    :rtype: ElectricFieldMeasurement
+    """
+    raw_str = pkg.segment_string().strip()
+    if raw_str == "E.F.":
+        value = 0.0
+    else:
+        scale = raw_str.count("-") - 1
+        value = (20.0, 55.0, 110.0, 220.0, 440.0)[scale]  # from p.14 of manual
+    return ElectricFieldMeasurement(value, properties)
 
 
 def parse_temperature(pkg, properties):
@@ -262,6 +293,8 @@ def parse_package(pkg):
     else:
         if remaining_symbols == set([Symbol.LOZ]):
             fn = parse_text
+        elif _is_electric_field(pkg):
+            fn = parse_electric_field
         elif remaining_symbols == set():
             fn = parse_temperature
         else:

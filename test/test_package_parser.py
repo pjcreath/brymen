@@ -87,6 +87,32 @@ class TestPackageParsers(unittest.TestCase):
 
         return
 
+    def test_optional_properties(self):
+        """Test detection of optional properties"""
+        sole_properties = ["relative", "recording", "min", "max"]
+        sole_packages = {
+            "02 1A 20 3C 47 50 6A 78 8F 9F A7 B0 C0 D0 E5": None,
+            "02 11 20 3e 4b 5e 6b 7e 8b 9e a4 b0 c0 d0 e0": "relative",
+            "02 18 20 3e 4b 5e 67 7c 8f 9e a4 b0 c0 d8 e8": "recording",
+            "02 18 20 3e 4b 5e 67 78 8a 9e a4 b0 c0 d0 e8": "min",
+            "02 18 20 3e 4b 58 6a 7e 8b 9e a4 b0 c0 d8 e0": "max",
+        }
+        for raw_package, expected_property in sole_packages.items():
+            pkg = reader.parse_package(bytes.fromhex(raw_package))
+            measurement = parser.parse_package(pkg)
+            for prop in sole_properties:
+                expected_value = False
+                if prop == expected_property:
+                    expected_value = True
+                self.assertEqual(measurement.properties[prop], expected_value)
+            self.assertEqual(measurement.properties["crest"], False)
+
+        crest_package = "02 12 20 3a 4d 59 6f 7e 8b 9c af b0 c8 d8 e4"  # max
+        pkg = reader.parse_package(bytes.fromhex(crest_package))
+        measurement = parser.parse_package(pkg)
+        self.assertEqual(measurement.properties["crest"], True)
+        return
+
 
 SAMPLE_PACKAGES = {
     "02 1A 20 3C 47 50 6A 78 8F 9F A7 B0 C0 D0 E5": ("Voltage", "513.6V [~]"),

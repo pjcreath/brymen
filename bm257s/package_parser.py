@@ -1,5 +1,7 @@
 """Parse package content to obtain measurement result"""
 
+import copy
+
 from .measurement import (
     CapacitanceMeasurement,
     CurrentMeasurement,
@@ -182,6 +184,41 @@ def parse_prefix(pkg):
     return prefix
 
 
+def _parse_boolean_property(symbols, properties, symbol, key):
+    if symbol in symbols:
+        properties[key] = True
+        symbols.remove(symbol)
+    else:
+        properties[key] = False
+    return
+
+
+def parse_optional_properties(pkg, properties):
+    """Identify additional properties indicated by the package.
+
+    :param properties: Set of properties to update
+    :type properties: dict
+    :return: Package symbols other than the ones parsed here
+    :rtype: set
+    """
+    remaining = copy.copy(pkg.symbols)
+
+    # Both MIN and MAX are shown when recording (and showing current value)
+    if Symbol.MIN in remaining and Symbol.MAX in remaining:
+        properties["recording"] = True
+        remaining.remove(Symbol.MIN)
+        remaining.remove(Symbol.MAX)
+    else:
+        properties["recording"] = False
+    _parse_boolean_property(remaining, properties, Symbol.MIN, "min")
+    _parse_boolean_property(remaining, properties, Symbol.MAX, "max")
+    _parse_boolean_property(remaining, properties, Symbol.REL, "relative")
+    _parse_boolean_property(remaining, properties, Symbol.CREST, "crest")
+    _parse_boolean_property(remaining, properties, Symbol.AUTO, "autorange")
+
+    return remaining
+
+
 def parse_package(pkg):
     """Parse package to obtain multimeter measurement
 
@@ -201,17 +238,18 @@ def parse_package(pkg):
         Symbol.OHM: parse_resistance,
         Symbol.FARAD: parse_capacitance,
     }
+    remaining_symbols = parse_optional_properties(pkg, properties)
     for symbol, fn in mapping.items():
         if symbol in pkg.symbols:
             break
     else:
-        if pkg.symbols == set([Symbol.LOZ]):
+        if remaining_symbols == set([Symbol.LOZ]):
             fn = parse_text
-        elif pkg.symbols == set():
+        elif remaining_symbols == set():
             fn = parse_temperature
         else:
             raise RuntimeError(
-                f"Cannot parse multimeter package configuration: {pkg.symbols}"
+                f"Cannot parse multimeter package configuration: {remaining_symbols}"
             )
     return fn(pkg, properties)
 

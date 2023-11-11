@@ -32,8 +32,33 @@ def average(measurements):
 class Measurement:
     """Generic measurement representation
 
-    :param display_value: Value displayed on the meter
+    :Primary Properties:
+    :param type: Physical property being measured (in English)
+    :type type: str
+    :param unit: Base units for that property, e.g. V, A, etc.
+    :type unit: str
+    :param value: Measured value in those units
+    :type value: float
+    :param display_unit: Unit range being measured, as displayed on meter: mV, kΩ, etc.
+    :type display_unit: str
+    :param display_value: Measured value in those units, as displayed on the meter
     :type display_value: float or None
+
+    :Additional Properties:
+    :param timestamp: Time at which the measurement was received
+    :type timestamp: datetime
+    :param autorange: The meter is currently auto-ranging
+    :type autorange: bool
+    :param recording: The meter is currently recording min and max measurements
+    :type recording: bool
+    :param min: Measurement is a recorded minimum (normal or crest)
+    :type min: bool
+    :param max: Measurement is a recorded maximum (normal or crest)
+    :type max: bool
+    :param crest: Measurement is an instantaneous peak-hold measurement (CREST)
+    :type crest: bool
+    :param relative: Measurement is in relative zero mode (REL)
+    :type relative: bool
     """
 
     PRECISION = 4  # Other multimeters might have greater display precision

@@ -54,7 +54,7 @@ while True:
 
 **Output**
 
-The `read()` function returns a Measurement subclass, representing the most recent measurement, with the following properties:
+The `read()` function returns a Measurement subclass, representing the most recent measurement, with the following typical properties:
 
 - `type`: The physical property being measured: "Voltage", "Temperature", etc.
 - `unit`: The base units for that property: V, Vrms, Ω, etc.  For temperature, "C" and "F" indicate which scale is being used by the meter.

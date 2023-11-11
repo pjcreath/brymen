@@ -6,6 +6,7 @@ from .measurement import (
     CapacitanceMeasurement,
     CurrentMeasurement,
     DiodeTest,
+    FrequencyMeasurement,
     Measurement,
     ResistanceMeasurement,
     TemperatureMeasurement,
@@ -160,6 +161,21 @@ def parse_capacitance(pkg, properties):
     return CapacitanceMeasurement(value, properties)
 
 
+def parse_frequency(pkg, properties):
+    """Parse frequency measurement from package
+
+    :param pkg: Package to parse
+    :type pkg: bm257s.package_parser.Package
+    :param properties: Properties common to any measurements
+    :type properties: dict
+
+    :return: Multimeter measurement
+    :rtype: FrequencyMeasurement
+    """
+    value = pkg.segment_float()
+    return FrequencyMeasurement(value, properties)
+
+
 def parse_prefix(pkg):
     """Parse metrix prefix of measurement
 
@@ -237,6 +253,7 @@ def parse_package(pkg):
         Symbol.AMPERE: parse_current,
         Symbol.OHM: parse_resistance,
         Symbol.FARAD: parse_capacitance,
+        Symbol.HZ: parse_frequency,
     }
     remaining_symbols = parse_optional_properties(pkg, properties)
     for symbol, fn in mapping.items():

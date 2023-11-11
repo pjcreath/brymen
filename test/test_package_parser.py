@@ -140,5 +140,8 @@ SAMPLE_PACKAGES = {
     "02 1a 20 3e 4b 5f 6b 7e 8b 9c a7 b8 c0 d0 e3": ("Current", "0.005A [~]"),
     "02 10 20 3f 4b 5f 6b 7e 8b 9e ab b0 c0 d0 e4": ("Diode", "-0.0V"),
     "02 10 20 30 40 5f 6b 76 81 90 a0 b0 c0 d0 e4": ("Diode", "OL"),
+    "02 18 20 3e 47 5e 6b 7f 8b 9e ab b0 c2 d0 e1": ("Frequency", "60.0Hz"),
+    "02 18 20 34 4e 5c 6f 7d 8f 9e af b1 c2 d0 e1": ("Frequency", "49.98kHz"),
+    "02 18 20 30 4a 5f 6b 7e 8b 9e ab b2 c2 d0 e1": ("Frequency", "1.0MHz"),
     "02 10 22 3e 4e 52 63 76 85 92 a7 b0 c0 d0 e0": ("Auto", ""),
 }

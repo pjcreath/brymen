@@ -13,28 +13,30 @@ from .measurement import (
 from .package_reader import Symbol
 
 
-def parse_text(pkg, _prefix):
+def parse_text(pkg, properties):
     """Parse text display from package
 
     :param pkg: Package to parse
     :type pkg: bm257s.package_parser.Package
+    :param properties: Properties common to any measurements
+    :type properties: dict
 
     :return: Measurement subclass whose display_value is the text
     :rtype: TextDisplay
     """
     raw_str = pkg.segment_string()
-    return TextDisplay(raw_str, timestamp=pkg.timestamp)
+    return TextDisplay(raw_str, properties)
 
 
-def parse_voltage(pkg, prefix):
+def parse_voltage(pkg, properties):
     """Parse voltage measurement from package
 
     :param pkg: Package to parse
     :type pkg: bm257s.package_parser.Package
-    :param prefix: Metric prefix of measurement
-    :type prefix: str
+    :param properties: Properties common to any measurements
+    :type properties: dict
 
-    :return: Multimeter measurement type and measurement
+    :return: Multimeter measurement
     :rtype: VoltageMeasurement
     """
     raw_str = pkg.segment_string()
@@ -46,31 +48,29 @@ def parse_voltage(pkg, prefix):
         value = float(raw_str)
 
     mapping = {
-        Symbol.AC: VoltageMeasurement.CURRENT_AC,
-        Symbol.DC: VoltageMeasurement.CURRENT_DC,
+        Symbol.AC: VoltageMeasurement.COUPLING_AC,
+        Symbol.DC: VoltageMeasurement.COUPLING_DC,
     }
-    for symbol, current in mapping.items():
+    for symbol, coupling in mapping.items():
         if symbol in pkg.symbols:
             break
     else:
-        return DiodeTest(display_value=value, prefix=prefix, timestamp=pkg.timestamp)
+        return DiodeTest(value, properties)
 
     if value is None:
         raise ValueError(f"unexpected voltage display: '{raw_str}'")
-    return VoltageMeasurement(
-        display_value=value, current=current, prefix=prefix, timestamp=pkg.timestamp
-    )
+    return VoltageMeasurement(value, coupling, properties)
 
 
-def parse_current(pkg, prefix):
+def parse_current(pkg, properties):
     """Parse current measurement from package
 
     :param pkg: Package to parse
     :type pkg: bm257s.package_parser.Package
-    :param prefix: Metric prefix of measurement
-    :type prefix: str
+    :param properties: Properties common to any measurements
+    :type properties: dict
 
-    :return: Multimeter measurement type and measurement
+    :return: Multimeter measurement
     :rtype: CurrentMeasurement
     """
     value = pkg.segment_float()
@@ -85,20 +85,18 @@ def parse_current(pkg, prefix):
     else:
         raise ValueError("Unknown current type displayed")
 
-    return CurrentMeasurement(
-        display_value=value, coupling=coupling, prefix=prefix, timestamp=pkg.timestamp
-    )
+    return CurrentMeasurement(value, coupling, properties)
 
 
-def parse_resistance(pkg, prefix):
+def parse_resistance(pkg, properties):
     """Parse resistance measurement from package
 
     :param pkg: Package to parse
     :type pkg: bm257s.package_parser.Package
-    :param prefix: Metric prefix of measurement
-    :type prefix: str
+    :param properties: Properties common to any measurements
+    :type properties: dict
 
-    :return: Multimeter measurement type and measurement
+    :return: Multimeter measurement
     :rtype: ResistanceMeasurement
     """
     raw_str = pkg.segment_string()
@@ -108,20 +106,18 @@ def parse_resistance(pkg, prefix):
         value = None
     else:
         value = float(raw_str)
-    return ResistanceMeasurement(
-        display_value=value, prefix=prefix, timestamp=pkg.timestamp
-    )
+    return ResistanceMeasurement(value, properties)
 
 
-def parse_temperature(pkg, _unused_prefix):
+def parse_temperature(pkg, properties):
     """Parse temperature measurement from package
 
     :param pkg: Package to parse
     :type pkg: bm257s.package_parser.Package
-    :param prefix: Metric prefix of measurement
-    :type prefix: str
+    :param properties: Properties common to any measurements
+    :type properties: dict
 
-    :return: Multimeter measurement type and measurement
+    :return: Multimeter measurement
     :rtype: TemperatureMeasurement
     """
     text = pkg.segment_string()
@@ -144,26 +140,22 @@ def parse_temperature(pkg, _unused_prefix):
         value = None
     else:
         value = int(text)
-    return TemperatureMeasurement(
-        unit=unit, display_value=value, timestamp=pkg.timestamp
-    )
+    return TemperatureMeasurement(value, unit, properties)
 
 
-def parse_capacitance(pkg, prefix):
+def parse_capacitance(pkg, properties):
     """Parse capacitance measurement from package
 
     :param pkg: Package to parse
     :type pkg: bm257s.package_parser.Package
-    :param prefix: Metric prefix of measurement
-    :type prefix: str
+    :param properties: Properties common to any measurements
+    :type properties: dict
 
-    :return: Multimeter measurement type and measurement
+    :return: Multimeter measurement
     :rtype: CapacitanceMeasurement
     """
     value = pkg.segment_float()
-    return CapacitanceMeasurement(
-        display_value=value, prefix=prefix, timestamp=pkg.timestamp
-    )
+    return CapacitanceMeasurement(value, properties)
 
 
 def parse_prefix(pkg):
@@ -199,7 +191,10 @@ def parse_package(pkg):
     :return: Multimeter measurement
     :rtype: Measurement subclass
     """
-    prefix = parse_prefix(pkg)
+    properties = {
+        "prefix": parse_prefix(pkg),
+        "timestamp": pkg.timestamp,
+    }
     mapping = {
         Symbol.VOLT: parse_voltage,
         Symbol.AMPERE: parse_current,
@@ -218,7 +213,7 @@ def parse_package(pkg):
             raise RuntimeError(
                 f"Cannot parse multimeter package configuration: {pkg.symbols}"
             )
-    return fn(pkg, prefix)
+    return fn(pkg, properties)
 
 
 def parse_package_list(pkgs, mode_change="exception"):

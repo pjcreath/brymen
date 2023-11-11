@@ -32,8 +32,8 @@ def average(measurements):
 class Measurement:
     """Generic measurement representation
 
-    :param prefix: Metric prefix of measurement
-    :type prefix: str
+    :param display_value: Value displayed on the meter
+    :type display_value: float or None
     """
 
     PRECISION = 4  # Other multimeters might have greater display precision
@@ -53,17 +53,28 @@ class Measurement:
     PREFIX_NANO = "n"
     unit = None  # should be overridden by all subclasses
 
-    def __init__(self, display_value, prefix=PREFIX_NONE, timestamp=None):
-        self.prefix = prefix
+    def __init__(self, display_value, properties):
+        """
+        :param display_value: Value displayed on the meter
+        :type display_value: float or None
+        :param properties: Properties common to any measurements
+        :type properties: dict
+
+        :Recognized Properties:
+        :param prefix: Metric prefix of the measurement units
+        :type prefix: str
+        :param timestamp: Time of the measurement
+        :type timestamp: datetime
+        """
+        self.prefix = properties.pop("prefix", self.PREFIX_NONE)
         self.display_unit = f"{self.prefix}{self.unit}"
         self.display_value = display_value
         if display_value is None:
             self._value = None
         else:
             self._value = display_value * self.PREFIX_MULTIPLIERS[self.prefix]
-        if timestamp is None:
-            timestamp = datetime.now()
-        self.timestamp = timestamp
+        self.timestamp = properties.pop("timestamp", datetime.now())
+        self.properties = properties  # save any remaining properties
 
     @property
     def type(self):
@@ -96,10 +107,10 @@ class Measurement:
 class TemperatureMeasurement(Measurement):
     """Representation of temperature measurement
 
-    :param unit: Unit of measurement, either UNIT_CELSIUS or UNIT_FAHRENHEIT
-    :type unit: int
     :param display_value: Measured temperature or None if no probe is connected
     :type value: int
+    :param unit: Unit of measurement, either UNIT_CELSIUS or UNIT_FAHRENHEIT
+    :type unit: str
     """
 
     _type = "Temperature"
@@ -107,12 +118,12 @@ class TemperatureMeasurement(Measurement):
     UNIT_CELSIUS = "C"
     UNIT_FAHRENHEIT = "F"
 
-    def __init__(self, unit, display_value, timestamp=None):
+    def __init__(self, display_value, unit, properties):
         if unit not in [self.UNIT_CELSIUS, self.UNIT_FAHRENHEIT, "?"]:
             raise ValueError(f"Unknown temperature unit: {unit}")
         self.unit = unit
 
-        super().__init__(display_value, timestamp=timestamp)
+        super().__init__(display_value, properties)
         self.display_unit = f"°{self.unit}"
         if display_value is None:
             self.display_value = "---"
@@ -124,15 +135,15 @@ class ResistanceMeasurement(Measurement):
 
     :param value: Measured resistance or None if open loop
     :type value: float
-    :param prefix: Metrix prefix of measurement
-    :type prefix: int
+    :param properties: Properties common to any measurements
+    :type properties: dict
     """
 
     _type = "Resistance"
     unit = "Ω"
 
-    def __init__(self, display_value, prefix=Measurement.PREFIX_NONE, timestamp=None):
-        super().__init__(display_value, prefix, timestamp=timestamp)
+    def __init__(self, display_value, properties):
+        super().__init__(display_value, properties)
         if display_value is None:
             self.display_value = "OL"
             self.display_unit = ""
@@ -144,15 +155,15 @@ class DiodeTest(Measurement):
 
     :param value: Measured voltage
     :type value: float
-    :param prefix: Metrix prefix of measurement
-    :type prefix: int
+    :param properties: Properties common to any measurements
+    :type properties: dict
     """
 
     _type = "Diode"
     unit = "V"
 
-    def __init__(self, display_value, prefix=Measurement.PREFIX_NONE, timestamp=None):
-        super().__init__(display_value, prefix=prefix, timestamp=timestamp)
+    def __init__(self, display_value, properties):
+        super().__init__(display_value, properties)
         if display_value is None:
             self.display_value = "OL"
             self.display_unit = ""
@@ -164,30 +175,28 @@ class VoltageMeasurement(Measurement):
 
     :param value: Measured voltage
     :type value: float
-    :param current: Type of current measured
-    :type current: int
-    :param prefix: Metrix prefix of measurement
-    :type prefix: int
+    :param coupoing: Type of voltage measured
+    :type coupling: str
+    :param properties: Properties common to any measurements
+    :type properties: dict
     """
 
     _type = "Voltage"
     unit = "V"
 
-    CURRENT_AC = 1
-    CURRENT_DC = 2
+    COUPLING_AC = "AC"
+    COUPLING_DC = "DC"
 
-    def __init__(
-        self, display_value, current, prefix=Measurement.PREFIX_NONE, timestamp=None
-    ):
-        self.current = current
-        super().__init__(display_value, prefix=prefix, timestamp=timestamp)
-        if self.current == self.CURRENT_AC:
+    def __init__(self, display_value, coupling, properties):
+        self.coupling = coupling
+        super().__init__(display_value, properties)
+        if self.coupling == self.COUPLING_AC:
             self.unit = "Vrms"
         return
 
     def __str__(self):
-        current_postfix = {self.CURRENT_AC: " [~]", self.CURRENT_DC: ""}
-        return super().__str__() + current_postfix[self.current]
+        coupling_postfix = {self.COUPLING_AC: " [~]", self.COUPLING_DC: ""}
+        return super().__str__() + coupling_postfix[self.coupling]
 
 
 class CurrentMeasurement(Measurement):
@@ -196,22 +205,20 @@ class CurrentMeasurement(Measurement):
     :param value: Measured current
     :type value: float
     :param coupling: Type of current measured
-    :type coupling: int
-    :param prefix: Metrix prefix of measurement
-    :type prefix: int
+    :type coupling: str
+    :param properties: Properties common to any measurements
+    :type properties: dict
     """
 
     _type = "Current"
     unit = "A"
 
-    COUPLING_AC = 1
-    COUPLING_DC = 2
+    COUPLING_AC = "AC"
+    COUPLING_DC = "DC"
 
-    def __init__(
-        self, display_value, coupling, prefix=Measurement.PREFIX_NONE, timestamp=None
-    ):
+    def __init__(self, display_value, coupling, properties):
         self.coupling = coupling
-        super().__init__(display_value, prefix=prefix, timestamp=timestamp)
+        super().__init__(display_value, properties)
         if self.coupling == self.COUPLING_AC:
             self.unit = "Arms"
         return
@@ -226,8 +233,8 @@ class CapacitanceMeasurement(Measurement):
 
     :param display_value: Measured capacitance as displayed on meter
     :type value: float
-    :param prefix: Metrix prefix of measurement
-    :type prefix: int
+    :param properties: Properties common to any measurements
+    :type properties: dict
     """
 
     _type = "Capacitance"
@@ -239,15 +246,15 @@ class TextDisplay(Measurement):
 
     :param display_value: Measured capacitance as displayed on meter
     :type value: float
-    :param prefix: Metrix prefix of measurement
-    :type prefix: int
+    :param properties: Properties common to any measurements
+    :type properties: dict
     """
 
     _type = "[Text]"
     unit = ""
 
-    def __init__(self, display_value, timestamp=None):
-        super().__init__(None, timestamp=timestamp)
+    def __init__(self, display_value, properties):
+        super().__init__(None, properties)
         self._type = display_value
         self.display_value = ""
         return

@@ -350,9 +350,17 @@ class PackageReader:
         :return: Last received packgae
         :rtype: Package
         """
+        return self.latest_package(clear=True)
+
+    def latest_package(self, clear=False):
+        """Returns the last received package and optionally removes it from storage
+
+        :return: Last received packgae
+        :rtype: Package
+        """
         self._propagate_exceptions()
         try:
-            pkg = self._buffer.read_latest(clear=True)
+            pkg = self._buffer.read_latest(clear=clear)
         except IndexError:
             pkg = None
         return pkg

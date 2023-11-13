@@ -128,13 +128,15 @@ class BM257sSerialInterface:
         """
         return self._package_reader.wait_for_package(timeout)
 
-    def read(self):
+    def read(self, clear=True):
         """Reads latest measurement from multimeter
 
+        :param clear: Remove the measurement from the buffer (default)
+        :type clear: bool
         :return: measurement or None
         :rtype: Measurement
         """
-        pkg = self._package_reader.next_package()
+        pkg = self._package_reader.latest_package(clear)
         if pkg is None:
             return None
 

@@ -12,6 +12,7 @@ import bm257s
 
 PORT = "/dev/cu.usbserial-1430"
 
+
 def curses_main(stdscr, interface):
     """Start minimal bm257s console
 
@@ -94,16 +95,17 @@ def main():
     parser.add_argument("port", nargs='?',
                         default="/dev/ttyUSB0",
                         help="serial port to use, defaults to /dev/ttyUSB0"
-                       )
+                        )
     parser.add_argument("--window", default=None, type=float, metavar="SECONDS",
                         help="how long to average samples, defaults to single sample",
-                       )
+                        )
     parser.add_argument("--log", default=None,
                         help="filepath at which to log incoming data"
-                       )
+                        )
     args = parser.parse_args()
     try:
-        with bm257s.BM257sSerialInterface(port=args.port, read_timeout=1.0, window=args.window, log=args.log) as mm:
+        with bm257s.BM257sSerialInterface(port=args.port, read_timeout=1.0,
+                                          window=args.window, log=args.log) as mm:
             try:
                 curses.wrapper(curses_main, mm)
             except KeyboardInterrupt:

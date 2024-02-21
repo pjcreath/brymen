@@ -1,6 +1,8 @@
 """Representation of measurements taken by bm257s multimeter"""
+
 # pylint: disable=R0903
 # Remove this once usage becomes clearer
+
 import copy
 import statistics
 from datetime import datetime

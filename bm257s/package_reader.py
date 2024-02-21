@@ -1,4 +1,5 @@
 """Read, organize and validate packages from data input"""
+
 # Protocol documented in BM250-BM250s-6000-count-digital-multimeters-r1.pdf
 # See PROTOCOLS.txt
 

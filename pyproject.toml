@@ -21,8 +21,16 @@ readme = "README.md"
 license = {text = "BSD 3-clause"}
 keywords = ["Brymen", "multimeter", "dmm"]
 classifiers = [
-   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3.8",
+   "Programming Language :: Python :: 3.9",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
    "License :: OSI Approved :: BSD License",
+   "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+   "Topic :: Software Development :: Libraries :: Python Modules",
+   "Development Status :: 3 - Alpha",  # API may change
 ]
 
 [project.urls]

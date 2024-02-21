@@ -1,4 +1,5 @@
 """Serial interface library for brymen bm257s multimeters"""
+
 import serial
 
 import bm257s.package_parser as parser

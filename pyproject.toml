@@ -1,0 +1,37 @@
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brymen"
+version = "0.2"
+dependencies = [
+   "pyserial",
+]
+requires-python = ">=3.6"
+authors = [
+    {name = "pjcreath", email = "pjcreath@users.noreply.github.com"},
+    {name = "Robert Wilbrandt", email = "robert@stamm-wilbrandt.de"},
+]
+description = "Python library to interface with Brymen multimeters"
+readme = "README.md"
+license = {text = "BSD 3-clause"}
+keywords = ["Brymen", "multimeter", "dmm"]
+classifiers = [
+   "Programming Language :: Python :: 3",
+   "License :: OSI Approved :: BSD License",
+]
+
+[project.urls]
+Repository = "https://github.com/pjcreath/brymen.git"
+Issues = "https://github.com/pjcreath/brymen/issues"
+
+[tool.setuptools.package-dir]
+brymen = "bm257s"
+"brymen.scripts" = "scripts"
+
+[project.scripts]
+brymen-console = "brymen.scripts.console:main"

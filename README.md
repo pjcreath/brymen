@@ -21,7 +21,7 @@ Basic Usage
 **Example 1**: For a very quick test of connectivity, you can bring up a text console showing the current reading from the meter:
 
 ```console
-./scripts/bm257s-console /dev/USBPORT
+brymen-console /dev/USBPORT
 ```
 
 If you're not getting any data, remember to hold down the `HOLD` button on the meter while turning it on.

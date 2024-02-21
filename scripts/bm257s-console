@@ -12,7 +12,7 @@ import bm257s
 
 PORT = "/dev/cu.usbserial-1430"
 
-def main(stdscr, interface):
+def curses_main(stdscr, interface):
     """Start minimal bm257s console
 
     :param stdscr: Curses window object
@@ -89,7 +89,7 @@ def main(stdscr, interface):
         time.sleep(0.1)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("port", nargs='?',
                         default="/dev/ttyUSB0",
@@ -105,10 +105,14 @@ if __name__ == "__main__":
     try:
         with bm257s.BM257sSerialInterface(port=args.port, read_timeout=1.0, window=args.window, log=args.log) as mm:
             try:
-                curses.wrapper(main, mm)
+                curses.wrapper(curses_main, mm)
             except KeyboardInterrupt:
                 curses.endwin()
 
     except RuntimeError as ex:
         print(f"Could not open serial device: {ex}", file=sys.stderr)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

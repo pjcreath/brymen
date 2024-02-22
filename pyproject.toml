@@ -33,13 +33,12 @@ classifiers = [
    "Development Status :: 3 - Alpha",  # API may change
 ]
 
+[tools.setuptools]
+packages = ["brymen", "test", "test.helpers"]
+
 [project.urls]
 Repository = "https://github.com/pjcreath/brymen.git"
 Issues = "https://github.com/pjcreath/brymen/issues"
-
-[tool.setuptools.package-dir]
-brymen = "bm257s"
-"brymen.scripts" = "scripts"
 
 [project.scripts]
 brymen-console = "brymen.scripts.console:main"

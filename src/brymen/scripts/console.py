@@ -8,7 +8,7 @@ import datetime
 import sys
 import time
 
-import bm257s
+import brymen
 
 PORT = "/dev/cu.usbserial-1430"
 
@@ -19,7 +19,7 @@ def curses_main(stdscr, interface):
     :param stdscr: Curses window object
     :type stdscr: curses.window
     :param interface: Multimeter interface
-    :type interface: bm257s.BM257sSerialInterface
+    :type interface: brymen.BM257sSerialInterface
     """
     stdscr.clear()
     curses.use_default_colors()
@@ -47,7 +47,7 @@ def curses_main(stdscr, interface):
             # Read from interface
             if interface.window:
                 measurements = interface.read_all(clear=False)
-                measurement = bm257s.measurement.average(measurements)
+                measurement = brymen.measurement.average(measurements)
             else:
                 measurement = interface.read()
             if measurement is not None:
@@ -91,21 +91,29 @@ def curses_main(stdscr, interface):
 
 
 def main():
+    """Entry point for brymen console"""
     parser = argparse.ArgumentParser()
-    parser.add_argument("port", nargs='?',
-                        default="/dev/ttyUSB0",
-                        help="serial port to use, defaults to /dev/ttyUSB0"
-                        )
-    parser.add_argument("--window", default=None, type=float, metavar="SECONDS",
-                        help="how long to average samples, defaults to single sample",
-                        )
-    parser.add_argument("--log", default=None,
-                        help="filepath at which to log incoming data"
-                        )
+    parser.add_argument(
+        "port",
+        nargs="?",
+        default=PORT,
+        help=f"serial port to use, defaults to {PORT}",
+    )
+    parser.add_argument(
+        "--window",
+        default=None,
+        type=float,
+        metavar="SECONDS",
+        help="how long to average samples, defaults to single sample",
+    )
+    parser.add_argument(
+        "--log", default=None, help="filepath at which to log incoming data"
+    )
     args = parser.parse_args()
     try:
-        with bm257s.BM257sSerialInterface(port=args.port, read_timeout=1.0,
-                                          window=args.window, log=args.log) as mm:
+        with brymen.BM257sSerialInterface(
+            port=args.port, read_timeout=1.0, window=args.window, log=args.log
+        ) as mm:
             try:
                 curses.wrapper(curses_main, mm)
             except KeyboardInterrupt:

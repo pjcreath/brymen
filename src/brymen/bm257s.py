@@ -2,7 +2,7 @@
 
 import serial
 
-import bm257s.package_parser as parser
+import brymen.package_parser as parser
 
 from .package_reader import PackageReader
 

@@ -3,7 +3,7 @@
 import unittest
 from datetime import datetime, timedelta
 
-from bm257s.buffer import Buffer
+from brymen.buffer import Buffer
 
 
 class TestBuffer(unittest.TestCase):

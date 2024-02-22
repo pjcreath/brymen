@@ -2,9 +2,9 @@
 
 import unittest
 
-import bm257s.measurement as measure
-import bm257s.package_parser as parser
-import bm257s.package_reader as reader
+import brymen.measurement as measure
+import brymen.package_parser as parser
+import brymen.package_reader as reader
 
 
 class TestPackageParsers(unittest.TestCase):

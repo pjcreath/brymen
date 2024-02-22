@@ -2,9 +2,9 @@
 
 import unittest
 
-import bm257s.measurement
-import bm257s.package_parser
-from bm257s.package_reader import PackageReader, TruncatedPackage, parse_package
+import brymen.measurement
+import brymen.package_parser
+from brymen.package_reader import PackageReader, TruncatedPackage, parse_package
 
 from .helpers.mock_data_reader import MockDataReader
 from .helpers.raw_package_helpers import (
@@ -196,7 +196,7 @@ class TestPackageReader(unittest.TestCase):
             len(test_packages),
             "Packages could not get parsed (windowed)",
         )
-        measurements = [bm257s.package_parser.parse_package(p) for p in read_packages]
+        measurements = [brymen.package_parser.parse_package(p) for p in read_packages]
         read_values = [m.value for m in measurements]
         test_values = list(test_packages.values())
         self.assertEqual(
@@ -206,7 +206,7 @@ class TestPackageReader(unittest.TestCase):
         )
 
         # Check measurement.average()
-        avg = bm257s.measurement.average(measurements)
+        avg = brymen.measurement.average(measurements)
         self.assertEqual(
             avg.values,
             test_values,
